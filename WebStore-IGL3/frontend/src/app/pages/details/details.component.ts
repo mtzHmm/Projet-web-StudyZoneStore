@@ -3,7 +3,6 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../models/product.interface';
 import { ProductService } from '../../services/product.service';
-import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
 
@@ -22,7 +21,6 @@ export class Details implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private productService: ProductService,
-    private authService: AuthService,
     private cartService: CartService,
     private notificationService: NotificationService,
     private renderer: Renderer2,
@@ -118,36 +116,16 @@ export class Details implements OnInit, OnDestroy {
       return;
     }
     
-    // Vérifier si l'utilisateur est connecté
-    if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/sign-in'], {
-        queryParams: { 
-          returnUrl: this.router.url,
-          message: 'Please sign in to add items to your cart',
-          messageType: 'warning'
-        }
-      });
-      return;
-    }
-    
     const isActuallyClothing = this.product.isClothing && !this.isNonClothingProduct();
     
     // For clothing items, require size selection
-
     if (this.product.isClothing && !this.selectedSize) {
       this.notificationService.warning('Please select a size');
       return;
     }
     
-    // Get current user (can be null for guest users)
-    const currentUser = this.authService.getCurrentUser();
-    console.log('🔍 Debug - Current user:', currentUser);
-    console.log('🔍 Debug - Token exists:', !!this.authService.getToken());
-    console.log('🔍 Debug - Is logged in:', this.authService.isLoggedIn());
-
-    
-    // Use userId 0 for guest users, actual ID for authenticated users
-    const userId = currentUser?.id || 0;
+    // Use guest user ID (no authentication)
+    const userId = 0;
     
     console.log('🛒 Adding to cart - User ID:', userId, 'Product ID:', this.product.id, 'Quantity:', 1);
     

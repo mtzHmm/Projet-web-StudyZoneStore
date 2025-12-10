@@ -21,11 +21,7 @@ import { ProductMod } from './pages/product-mod/product-mod.component';
 import { OrderDetails } from './pages/order-details/order-details.component';
 import { Stats } from './pages/stats/stats.component';
 import { ContactAdmin } from './pages/contact-admin/contact-admin.component';
-import { Verify2faComponent } from './pages/verify-2fa/verify-2fa.component';
-import { authGuard } from './guards/auth.guard';
-import { adminGuard } from './guards/admin.guard';
-import { verify2faGuard } from './guards/verify-2fa.guard';
-import { cartGuard } from './guards/cart.guard';
+
 
 
 export const routes: Routes = [
@@ -36,11 +32,10 @@ export const routes: Routes = [
   { path: 'contact', component: Contact },
   { path: 'sign-in', component: SignInComponent},
   { path: 'account-info', component: AccountInfo }, // Used for both registration and account display
-  { path: 'verify-2fa', component: Verify2faComponent, canActivate: [verify2faGuard] }, // Only accessible after registration/login
   
-  // Protected routes (require authentication)
-  { path: 'cart', component: CartComponent, canActivate: [authGuard] },
-  { path: 'checkout', component: Checkout, canActivate: [cartGuard] }, // Requires non-empty cart
+  // Cart and checkout - now public
+  { path: 'cart', component: CartComponent },
+  { path: 'checkout', component: Checkout },
   
   // Admin routes (temporarily removed security)
   { path: 'dashboard', component: AdminDashboard },

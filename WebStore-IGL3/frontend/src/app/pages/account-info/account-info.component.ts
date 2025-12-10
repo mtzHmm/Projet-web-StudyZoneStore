@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { AuthService, SignUpRequest, User } from '../../services/auth.service';
 
 
 @Component({
@@ -20,7 +19,7 @@ export class AccountInfo {
   successMessage: string = '';
   
 
-constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
+constructor(private fb: FormBuilder, private router: Router) {
   this.signupForm = this.fb.group({
     firstName: [''],
     lastName: [''],
@@ -53,50 +52,10 @@ constructor(private fb: FormBuilder, private router: Router, private authService
     this.indicationMsg = "For better security, consider including uppercase, lowercase, and numbers in your password.";
   }
   this.indicationMsg="";
-  this.errorMessage = '';  
-  const signUpData: SignUpRequest = { firstName, lastName, email, password };
-  this.authService.register(signUpData).subscribe({
-      next: (res:any) => {
-      // Check if 2FA is required
-      if (res.twoFactorRequired) {
-        console.log('2FA required after registration, navigating to verification page');
-        this.successMessage = "Account created! Verification code sent to your email.";
-        
-        // Store email in sessionStorage as backup
-        sessionStorage.setItem('pending_2fa_email', res.email || email);
-        
-        // Navigate to 2FA verification page after 1 second
-        setTimeout(() => {
-          this.router.navigate(['/verify-2fa'], {
-            state: { email: res.email || email }
-          });
-        }, 1000);
-        return;
-      }
-      
-      // If no 2FA required (old accounts), proceed with normal registration
-      localStorage.setItem('token', res.token);
-      
-      // Create user object from the registration response
-      const user: User = {
-        id: res.userDetails?.id,
-        firstName: res.userDetails?.firstName || firstName,
-        lastName: res.userDetails?.lastName || lastName, 
-        email: res.userDetails?.email || email,
-        role: res.userDetails?.role || 'CLIENT' // Default role for new registrations
-      };
-      
-      // Set the current user in the auth service
-      this.authService.setCurrentUser(user);
-      
-       this.successMessage = "Registration successful! You can now log in.";
-      setTimeout(() => this.router.navigate(['/landing']), 2000);
-      },
-      error: (err: any) => {
-  console.error('Detailed registration error:', err);
-  this.errorMessage = err.error?.message || 'Error during registration';
-}
-
-    });
+  this.errorMessage = ''; 
+  
+  // Simulate successful registration
+  this.successMessage = "Registration successful! Redirecting to landing page...";
+  setTimeout(() => this.router.navigate(['/landing']), 2000);
   }
 }

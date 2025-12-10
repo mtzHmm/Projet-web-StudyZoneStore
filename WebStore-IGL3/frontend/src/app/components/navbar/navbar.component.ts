@@ -1,8 +1,15 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService, User } from '../../services/auth.service';
 import { Subscription } from 'rxjs';
+
+export interface User {
+  id?: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role?: string;
+}
 
 @Component({
   selector: 'app-navbar',
@@ -17,15 +24,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private userSubscription: Subscription = new Subscription();
 
   constructor(
-    public authService: AuthService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    // S'abonner aux changements de l'utilisateur connecté
-    this.userSubscription = this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-    });
+    // No authentication - user is always null
+    this.currentUser = null;
   }
 
   ngOnDestroy() {
@@ -42,20 +46,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   // Getter pour obtenir le nom d'affichage
   get displayName(): string {
-    if (!this.currentUser) return 'MOSTAFA'; // Fallback
-    
-    if (this.currentUser.firstName) {
-      return this.currentUser.firstName.toUpperCase();
-    }
-    
-    // Si pas de prénom, utiliser la partie avant @ de l'email
-    return this.currentUser.email.split('@')[0].toUpperCase();
-  }
-
-  // Méthode de déconnexion
-  logout() {
-    this.authService.logout();
-    this.closeMobileMenu(); // Fermer le menu mobile si ouvert
-    this.router.navigate(['/']); // Rediriger vers la page d'accueil
+    return 'GUEST'; // No authentication - show guest
   }
 }

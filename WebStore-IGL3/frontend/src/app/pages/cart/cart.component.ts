@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { CartItem } from '../../models/cart-item.interface';
 import { CartService } from '../../services/cart.service';
-import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
+import { MOCK_PRODUCTS } from '../../services/mock-data';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, HttpClientModule],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.css']
 })
@@ -24,43 +24,95 @@ export class CartComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private cartService: CartService,
-    private authService: AuthService,
     private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
+    // Clear existing cart data and load fresh mock data
+    this.clearAndReloadCart();
+  }
+
+  clearAndReloadCart() {
+    // Clear localStorage cart for guest user (userId = 0)
+    localStorage.removeItem('studyzone_cart_0');
+    console.log('🧹 Cleared existing cart data');
+    
+    // Load fresh cart items
     this.loadCartItems();
   }
 
   loadCartItems() {
-    const currentUser = this.authService.getCurrentUser();
+    console.log('🛒 Loading cart - no auth required');
     
-    if (!currentUser || !currentUser.id) {
-      this.error = 'Veuillez vous connecter pour voir votre panier';
-      this.cartItems = [];
-      this.calculateTotal();
-      return;
-    }
-
     this.loading = true;
     this.error = '';
     
-    this.cartService.getCartItems(currentUser.id).subscribe({
+    // Use guest user ID (0) for cart operations
+    this.cartService.getCartItems(0).subscribe({
       next: (items) => {
         this.cartItems = items;
         this.calculateTotal();
         this.loading = false;
+        console.log('✅ Cart items loaded:', items);
       },
       error: (error) => {
-        console.error('Erreur lors du chargement du panier:', error);
-        this.error = 'Impossible de charger le panier';
+        console.error('❌ Error loading cart items:', error);
+        this.error = 'Failed to load cart items';
         this.loading = false;
-        
-        // Fallback vers des données de test si l'API ne marche pas
-        this.cartItems = [];
-        this.calculateTotal();
+        // Fallback to demo data
+        this.loadDemoCartData();
       }
     });
+  }
+
+  loadDemoCartData() {
+    // Get some products from mock data for demo cart
+    const product1 = MOCK_PRODUCTS.find(p => p.id === 1); // Black T-Shirt
+    const product2 = MOCK_PRODUCTS.find(p => p.id === 3); // Navy Hoodie
+    const product3 = MOCK_PRODUCTS.find(p => p.id === 5); // Blue Jeans
+    
+    this.cartItems = [];
+    
+    if (product1) {
+      this.cartItems.push({
+        id: 1,
+        productId: product1.id,
+        name: product1.name,
+        price: product1.price,
+        quantity: 2,
+        totalPrice: product1.price * 2,
+        imageUrl: product1.imageUrl || '/assets/images/placeholder.jpg'
+      });
+    }
+    
+    if (product2) {
+      this.cartItems.push({
+        id: 2,
+        productId: product2.id,
+        name: product2.name,
+        price: product2.price,
+        quantity: 1,
+        totalPrice: product2.price * 1,
+        imageUrl: product2.imageUrl || '/assets/images/placeholder.jpg'
+      });
+    }
+    
+    if (product3) {
+      this.cartItems.push({
+        id: 3,
+        productId: product3.id,
+        name: product3.name,
+        price: product3.price,
+        quantity: 1,
+        totalPrice: product3.price * 1,
+        imageUrl: product3.imageUrl || '/assets/images/placeholder.jpg'
+      });
+    }
+    
+    this.calculateTotal();
+    this.loading = false;
+    this.error = '';
+    console.log('Demo cart loaded with mock products:', this.cartItems);
   }
 
   onQuantityChange(event: { id: number, quantity: number }) {
@@ -89,19 +141,6 @@ export class CartComponent implements OnInit {
   }
 
   private updateItemQuantity(item: CartItem, newQuantity: number) {
-    const currentUser = this.authService.getCurrentUser();
-    
-    if (!currentUser || !currentUser.id) {
-      this.router.navigate(['/sign-in'], {
-        queryParams: { 
-          returnUrl: '/cart',
-          message: 'Please sign in to modify your cart',
-          messageType: 'warning'
-        }
-      });
-      return;
-    }
-
     // Calculer la différence de quantité
     const oldQuantity = item.quantity;
     const quantityDiff = newQuantity - oldQuantity;
@@ -115,34 +154,11 @@ export class CartComponent implements OnInit {
     item.totalPrice = item.price * item.quantity;
     this.calculateTotal();
 
-    console.log('🔄 Updating quantity for product:', item.productId, 'from:', oldQuantity, 'to:', newQuantity);
-
-    // Utiliser addToCart avec la différence de quantité (peut être négative)
-    this.cartService.addToCart(currentUser.id, item.productId, quantityDiff).subscribe({
-      next: (response) => {
-        console.log('✅ Quantity updated successfully via addToCart:', response);
-        // Pas besoin de recharger, la mise à jour optimiste est déjà faite
-        // L'UI est déjà à jour grâce à la mise à jour optimiste ci-dessus
-      },
-      error: (error) => {
-        console.error('❌ Error updating quantity:', error);
-        // Rollback en cas d'erreur
-        item.quantity = oldQuantity;
-        item.totalPrice = item.price * item.quantity;
-        this.calculateTotal();
-        this.notificationService.error('Error updating quantity. Please try again.');
-      }
-    });
+    console.log('🔄 Quantity updated for product:', item.productId);
+    this.notificationService.success('Quantity updated!');
   }
 
   onRemoveItem(id: number) {
-    const currentUser = this.authService.getCurrentUser();
-    
-    if (!currentUser || !currentUser.id) {
-      this.notificationService.warning('Please login to modify your cart');
-      return;
-    }
-
     // Trouver l'élément à supprimer pour récupérer le productId
     const itemToRemove = this.cartItems.find(item => item.id === id);
     if (!itemToRemove) {
@@ -152,22 +168,10 @@ export class CartComponent implements OnInit {
 
     console.log('🗑️ Removing item:', itemToRemove);
     
-    // Supprimer localement d'abord pour une réaction rapide de l'UI
+    // Supprimer localement
     this.cartItems = this.cartItems.filter(item => item.id !== id);
     this.calculateTotal();
-
-    // Appeler l'API backend pour supprimer définitivement
-    this.cartService.removeFromCart(currentUser.id, itemToRemove.productId).subscribe({
-      next: () => {
-        console.log('✅ Item successfully removed from backend');
-      },
-      error: (error) => {
-        console.error('❌ Error removing item from backend:', error);
-        // En cas d'erreur, rechargeons le panier pour rester synchronisé
-        this.notificationService.error('Error removing item. Reloading cart...');
-        this.loadCartItems();
-      }
-    });
+    this.notificationService.success('Item removed from cart!');
   }
 
   calculateTotal() {
@@ -185,14 +189,7 @@ export class CartComponent implements OnInit {
       return;
     }
 
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser || !currentUser.id) {
-      this.notificationService.info('Please login to complete your order');
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    // Rediriger vers la page checkout au lieu de valider directement
+    // Allow checkout for all users - no auth required
     console.log('🛒 Redirecting to checkout page...');
     this.router.navigate(['/checkout']);
   }

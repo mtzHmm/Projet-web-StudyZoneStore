@@ -52,9 +52,9 @@
               My Orders
             </a>
             <hr class="my-1 border-white/20">
-            <button (click)="logout()" class="w-full text-left px-4 py-2 text-white hover:bg-white/10 transition-colors font-['Poppins']">
-              Se Déconnecter
-            </button>
+            <a routerLink="/landing" class="block px-4 py-2 text-white hover:bg-white/10 transition-colors font-['Poppins']">
+              Return to Home
+            </a>
           </div>
         </div>
       </div>
@@ -84,9 +84,9 @@
       </button>
 
       <!-- Cart Icon -->
-      <button routerLink="/cart" class="w-6 h-6 lg:w-8 lg:h-8 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-all duration-200"
-              title="Shopping Cart"
-              [class.relative]="cartItemCount > 0">
+      <a routerLink="/cart" class="w-6 h-6 lg:w-8 lg:h-8 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-all duration-200 cursor-pointer"
+         title="Shopping Cart"
+         [class.relative]="cartItemCount > 0">
         <svg class="w-4 h-4 lg:w-5 lg:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
           <path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
         </svg>
@@ -96,7 +96,7 @@
           class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
           {{ cartItemCount }}
         </span>
-      </button>
+      </a>
     </div>
 
     <!-- Mobile: Menu Button -->
@@ -155,10 +155,10 @@
                class="text-white hover:text-purple-200 block px-3 py-2 rounded-md text-sm font-medium font-['Poppins'] transition-colors">
               Admin Dashboard
             </a>
-            <button (click)="logout(); closeMobileMenu()" 
-                    class="text-white hover:text-red-300 block px-3 py-2 rounded-md text-sm font-medium font-['Poppins'] transition-colors w-full text-left">
-              Se Déconnecter
-            </button>
+            <a routerLink="/landing" (click)="closeMobileMenu()" 
+               class="text-white hover:text-purple-200 block px-3 py-2 rounded-md text-sm font-medium font-['Poppins'] transition-colors">
+              Return to Home
+            </a>
           </div>
         </div>
         

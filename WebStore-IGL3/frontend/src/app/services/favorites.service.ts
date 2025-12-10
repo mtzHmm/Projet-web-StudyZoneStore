@@ -1,8 +1,15 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { AuthService, User } from './auth.service';
 import { LOCAL_STORAGE_KEYS as STORAGE_KEYS } from './mock-data';
+
+export interface User {
+  id?: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role?: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -11,37 +18,17 @@ export class FavoritesService {
   private readonly STORAGE_KEY = STORAGE_KEYS.FAVORITES;
   private favoritesSubject = new BehaviorSubject<number[]>([]);
 
-  constructor(
-    private authService: AuthService
-  ) {
-    console.log('⭐ FavoritesService initialized with localStorage');
+  constructor() {
+    console.log('⭐ FavoritesService initialized with localStorage - no auth required');
     this.initializeFavorites();
   }
 
   /**
-   * Initialize favorites according to login state
+   * Initialize favorites - no auth required, use global favorites
    */
   private initializeFavorites(): void {
-    const user = this.authService.getCurrentUser();
-    
-    if (user?.id) {
-      console.log('👤 User logged in, loading favorites from localStorage for user:', user.id);
-      this.loadFavoritesFromStorage(user.id);
-    } else {
-      console.log('👤 User not logged in, loading global favorites from localStorage');
-      this.favoritesSubject.next(this.loadFromStorage());
-    }
-
-    // Listen for authentication changes
-    this.authService.currentUser$.subscribe(newUser => {
-      if (newUser?.id) {
-        console.log('🔄 Login detected, switching to user-specific favorites');
-        this.loadFavoritesFromStorage(newUser.id);
-      } else {
-        console.log('🔄 Logout detected, returning to global localStorage');
-        this.favoritesSubject.next(this.loadFromStorage());
-      }
-    });
+    console.log('⭐ Loading global favorites from localStorage');
+    this.favoritesSubject.next(this.loadFromStorage());
   }
 
   /**
@@ -77,78 +64,37 @@ export class FavoritesService {
   }
 
   /**
-   * Toggle favorite state of a product
+   * Toggle favorite state of a product (localStorage only)
    */
   toggleFavorite(productId: number): boolean {
-    const user = this.authService.getCurrentUser();
-    
-    if (user?.id) {
-      // Logged in user → use API
-      this.toggleFavoriteOnServer(user.id, productId);
-      // Update local state immediately for reactive UI
-      const currentFavorites = this.getCurrentFavorites();
-      const isCurrentlyFavorite = currentFavorites.includes(productId);
-      if (isCurrentlyFavorite) {
-        this.updateLocalFavorites(currentFavorites.filter(id => id !== productId));
-        return false;
-      } else {
-        this.updateLocalFavorites([...currentFavorites, productId]);
-        return true;
-      }
+    if (this.isFavorite(productId)) {
+      this.removeFromFavoritesLocal(productId);
+      return false;
     } else {
-      // Not logged in → localStorage only
-      if (this.isFavorite(productId)) {
-        this.removeFromFavoritesLocal(productId);
-        return false;
-      } else {
-        this.addToFavoritesLocal(productId);
-        return true;
-      }
+      this.addToFavoritesLocal(productId);
+      return true;
     }
   }
 
   /**
-   * Toggle favorite status for a product (Observable version)
+   * Toggle favorite status for a product (Observable version) - localStorage only
    */
   toggleFavoriteObservable(productId: number): Observable<boolean> {
-    const user = this.authService.getCurrentUser();
     const isFav = this.isFavorite(productId);
-
-    if (user?.id) {
-      // User logged in - save to user-specific storage
-      const userKey = `${this.STORAGE_KEY}_user_${user.id}`;
-      const userFavorites = this.loadFromStorageKey(userKey);
-      
-      let updatedFavorites: number[];
-      if (isFav) {
-        updatedFavorites = userFavorites.filter(id => id !== productId);
-        console.log('💔 Product removed from favorites (user):', productId);
-      } else {
-        updatedFavorites = [...userFavorites, productId];
-        console.log('⭐ Product added to favorites (user):', productId);
-      }
-
-      this.saveToStorageKey(userKey, updatedFavorites);
-      this.favoritesSubject.next(updatedFavorites);
-      
-      return of(!isFav).pipe(delay(300));
+    let currentFavorites = this.loadFromStorage();
+    
+    if (isFav) {
+      currentFavorites = currentFavorites.filter(id => id !== productId);
+      console.log('💔 Product removed from favorites:', productId);
     } else {
-      // Not logged in - save to global localStorage
-      let currentFavorites = this.loadFromStorage();
-      
-      if (isFav) {
-        currentFavorites = currentFavorites.filter(id => id !== productId);
-        console.log('💔 Product removed from favorites (guest):', productId);
-      } else {
-        currentFavorites = [...currentFavorites, productId];
-        console.log('⭐ Product added to favorites (guest):', productId);
-      }
-
-      this.saveToStorage(currentFavorites);
-      this.favoritesSubject.next(currentFavorites);
-      
-      return of(!isFav).pipe(delay(300));
+      currentFavorites = [...currentFavorites, productId];
+      console.log('⭐ Product added to favorites:', productId);
     }
+
+    this.saveToStorage(currentFavorites);
+    this.favoritesSubject.next(currentFavorites);
+    
+    return of(!isFav).pipe(delay(300));
   }
 
   /**
@@ -180,19 +126,8 @@ export class FavoritesService {
    * Clear all favorites
    */
   clearAllFavorites(): void {
-    const user = this.authService.getCurrentUser();
-    
-    if (user?.id) {
-      // Logged in user - clear user-specific favorites
-      const userKey = `${this.STORAGE_KEY}_user_${user.id}`;
-      localStorage.removeItem(userKey);
-      console.log('🗑️ User favorites cleared');
-    } else {
-      // Not logged in - clear global favorites
-      localStorage.removeItem(this.STORAGE_KEY);
-      console.log('🗑️ Global favorites cleared');
-    }
-    
+    localStorage.removeItem(this.STORAGE_KEY);
+    console.log('🗑️ Global favorites cleared');
     this.favoritesSubject.next([]);
   }
 
@@ -302,12 +237,10 @@ export class FavoritesService {
    * MÉTHODE DE DEBUG : Afficher l'état actuel
    */
   debugState(): void {
-    const user = this.authService.getCurrentUser();
     const favorites = this.getCurrentFavorites();
     const localStorage = this.loadFromStorage();
     
     console.log('🔍 DEBUG STATE:');
-    console.log('  - Utilisateur connecté:', user);
     console.log('  - Favoris en mémoire:', favorites);
     console.log('  - Favoris localStorage:', localStorage);
   }

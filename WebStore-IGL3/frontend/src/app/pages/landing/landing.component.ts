@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Button } from '../../components/button/button.component';
-import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-landing',
@@ -13,9 +12,9 @@ import { AuthService } from '../../services/auth.service';
 export class LandingComponent implements OnInit {
   isUserLoggedIn = false;
 
-  constructor(private authService: AuthService) {}
+  constructor() {}
 
   ngOnInit() {
-    this.isUserLoggedIn = this.authService.isLoggedIn();
+    this.isUserLoggedIn = false; // No authentication
   }
 }

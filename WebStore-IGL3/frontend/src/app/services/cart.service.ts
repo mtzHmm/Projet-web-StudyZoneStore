@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { CartItem } from '../models/cart-item.interface';
-import { LOCAL_STORAGE_KEYS as STORAGE_KEYS } from './mock-data';
+import { LOCAL_STORAGE_KEYS as STORAGE_KEYS, MOCK_PRODUCTS } from './mock-data';
 
 interface CartItemLocal extends CartItem {
   productId: number;
@@ -38,15 +38,18 @@ export class CartService {
       existingItem.totalPrice = existingItem.price * existingItem.quantity;
       updatedItem = existingItem;
     } else {
-      // Add new item
+      // Find actual product data from mock products
+      const mockProduct = MOCK_PRODUCTS.find(p => p.id === productId);
+      
+      // Add new item with real product data
       updatedItem = {
         id: Math.random(),
         productId,
-        name: `Product ${productId}`,
-        price: 29.99,
+        name: mockProduct?.name || `Product ${productId}`,
+        price: mockProduct?.price || 29.99,
         quantity,
-        imageUrl: '/assets/images/placeholder.jpg',
-        totalPrice: 29.99 * quantity
+        imageUrl: mockProduct?.imageUrl || '/assets/images/placeholder.jpg',
+        totalPrice: (mockProduct?.price || 29.99) * quantity
       };
       cart.push(updatedItem);
     }
@@ -115,12 +118,56 @@ export class CartService {
 
   private getCartFromStorage(userId: number): CartItemLocal[] {
     try {
-      const data = localStorage.getItem(this.getCartKey(userId));
-      return data ? JSON.parse(data) : [];
+      // For now, always return fresh demo data to see the mock products
+      console.log('🛒 Returning fresh demo cart items');
+      return this.createDemoCartItems();
+      
+      // Original code (commented out temporarily):
+      // const data = localStorage.getItem(this.getCartKey(userId));
+      // if (data) {
+      //   return JSON.parse(data);
+      // } else {
+      //   return this.createDemoCartItems();
+      // }
     } catch (error) {
       console.error('Error reading cart from storage:', error);
-      return [];
+      return this.createDemoCartItems();
     }
+  }
+
+  private createDemoCartItems(): CartItemLocal[] {
+    // Get some products from mock data for demo cart
+    const product1 = MOCK_PRODUCTS.find(p => p.id === 1); // Black T-Shirt
+    const product2 = MOCK_PRODUCTS.find(p => p.id === 3); // Navy Hoodie
+    
+    const demoItems: CartItemLocal[] = [];
+    
+    if (product1) {
+      demoItems.push({
+        id: 1,
+        productId: product1.id,
+        name: product1.name,
+        price: product1.price,
+        quantity: 2,
+        totalPrice: product1.price * 2,
+        imageUrl: product1.imageUrl || '/assets/images/placeholder.jpg'
+      });
+    }
+    
+    if (product2) {
+      demoItems.push({
+        id: 2,
+        productId: product2.id,
+        name: product2.name,
+        price: product2.price,
+        quantity: 1,
+        totalPrice: product2.price * 1,
+        imageUrl: product2.imageUrl || '/assets/images/placeholder.jpg'
+      });
+    }
+    
+    console.log('Created demo cart items:', demoItems);
+    return demoItems;
   }
 
   private saveCartToStorage(userId: number, cart: CartItemLocal[]): void {
