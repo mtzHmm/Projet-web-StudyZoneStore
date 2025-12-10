@@ -1,0 +1,420 @@
+<div class="product-mod-container min-h-screen text-white flex flex-col bg-zinc-900">
+  <div class="flex-1 p-10 flex flex-col items-center justify-center">
+    <!-- Product Display Section -->
+    <div class="bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,_rgba(0,0,0,0)_0%,_rgba(146,54,255,0.1)_100%)]
+            rounded-[40px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)]
+            outline outline-1 outline-black backdrop-blur-lg
+            p-12 flex gap-20 max-w-7xl w-full mb-10 lg:flex-row flex-col">
+      <div class="flex-1 flex flex-col gap-6">
+        <div class="w-full h-[450px] bg-white/10 rounded-2xl flex items-center justify-center overflow-hidden relative">
+          <img [src]="selectedImage || 'assets/hoodie.svg'" alt="Product Image" class="max-w-full max-h-full object-contain p-4">
+          
+          <!-- Bouton recadrer en haut à droite -->
+          <button 
+            *ngIf="selectedImage && selectedImage !== 'assets/hoodie.svg'"
+            class="absolute top-4 right-4 w-10 h-10 bg-violet-600 text-white rounded-full flex items-center justify-center hover:bg-violet-700 transition-all duration-300 shadow-lg"
+            (click)="recropImage(selectedImageIndex)"
+            title="Recadrer cette image">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Image Thumbnails -->
+        <div class="flex gap-4 justify-center flex-wrap">
+          <div class="relative w-20 h-20 bg-white/10 rounded-xl cursor-pointer flex items-center justify-center border-2 transition-all duration-300 overflow-hidden hover:scale-105 group"
+               *ngFor="let image of productImages; let i = index"
+               [class]="selectedImageIndex === i ? 'border-white bg-white/30 scale-110 shadow-lg' : 'border-transparent hover:border-white/50'">
+            <img [src]="image" 
+                 alt="Thumbnail {{i + 1}}" 
+                 class="w-full h-full object-contain p-1"
+                 (click)="selectImage(i)"
+                 [title]="'Cliquez pour afficher l\'image ' + (i + 1) + ' en grand'">
+            
+            <!-- Boutons d'action -->
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-1">
+              <!-- Bouton recadrer -->
+              <button 
+                class="w-7 h-7 bg-violet-600 text-white rounded-full flex items-center justify-center text-xs hover:bg-violet-700 transition-colors"
+                (click)="recropImage(i); $event.stopPropagation()"
+                title="Recadrer cette image">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </button>
+              
+              <!-- Bouton supprimer -->
+              <button 
+                class="w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                (click)="removeImage(i); $event.stopPropagation()"
+                title="Supprimer cette image">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center cursor-pointer border-2 border-dashed border-white/50 hover:bg-white/20 hover:border-white transition-all duration-300" 
+               (click)="triggerFileInput()"
+               [class.opacity-50]="isLoading"
+               [class.cursor-not-allowed]="isLoading">
+            <div class="text-2xl font-bold text-white/80">+</div>
+          </div>
+          <!-- Hidden file input -->
+          <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)" class="hidden" [disabled]="isLoading">
+        </div>
+      </div>
+
+      <!-- Product Information Section -->
+      <div class="flex-1 flex flex-col gap-8">
+        <div class="text-center">
+          <h2 class="text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+            {{isEditMode ? 'MODIFIER PRODUIT' : 'NOUVEAU PRODUIT'}}
+          </h2>
+          <p class="text-white/70 mt-2" *ngIf="isEditMode">REFERENCE: {{productReference || 'N/A'}}</p>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div *ngIf="isLoading" class="flex justify-center items-center py-4">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          <span class="ml-2 text-white/80">{{isEditMode ? 'Chargement...' : 'Sauvegarde...'}}</span>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-red-200">
+          {{errorMessage}}
+        </div>
+
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="bg-green-500/20 border border-green-500/50 rounded-lg p-4 text-green-200">
+          {{successMessage}}
+        </div>
+
+        <div class="flex flex-col gap-6">
+          <!-- Reference and Description -->
+          <div class="flex gap-8 lg:flex-row flex-col">
+            <div class="flex-1 flex flex-col gap-2">
+              <label class="text-sm font-semibold text-white/80">Référence:</label>
+              <input type="text" [(ngModel)]="productReference" class="bg-white/10 border border-white/20 rounded-xl p-3 text-white text-base focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all duration-300 placeholder:text-white/60" placeholder="REF123456">
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-semibold text-white/80">Description:</label>
+            <textarea [(ngModel)]="productDescription" rows="3" class="bg-white/10 border border-white/20 rounded-xl p-3 text-white text-base focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all duration-300 placeholder:text-white/60 resize-vertical" placeholder="Description du produit..."></textarea>
+          </div>
+
+          <div class="flex gap-8 lg:flex-row flex-col">
+            <div class="flex-1 flex flex-col gap-2">
+              <label class="text-sm font-semibold text-white/80">Material:</label>
+              <input type="text" [(ngModel)]="productMaterial" class="bg-white/10 border border-white/20 rounded-xl p-3 text-white text-base focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all duration-300 placeholder:text-white/60" placeholder="coton">
+            </div>
+            <div class="flex-1 flex flex-col gap-2">
+              <label class="text-sm font-semibold text-white/80">Printings:</label>
+              <input type="text" [(ngModel)]="productPrintings" class="bg-white/10 border border-white/20 rounded-xl p-3 text-white text-base focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all duration-300 placeholder:text-white/60" placeholder="screen-printed logo">
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-4" *ngIf="isClothing">
+            <label class="text-sm font-semibold text-white/80">Sizing:</label>
+            <div class="flex gap-4 flex-wrap">
+              <div class="w-10 h-10 bg-white/10 border-2 border-white/30 rounded-lg flex items-center justify-center cursor-pointer font-semibold transition-all duration-300 hover:bg-white/20"
+                   *ngFor="let size of availableSizes"
+                   [class]="selectedSizes.includes(size) ? 'bg-white/30 border-white' : ''"
+                   (click)="toggleSize(size)">
+                {{size}}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-8 lg:flex-row flex-col">
+            <div class="flex-1 flex flex-col gap-2">
+              <label class="text-sm font-semibold text-white/80">Category:</label>
+              
+              <!-- Select existant -->
+              <div *ngIf="!isAddingCategory">
+                <!-- Liste des catégories avec pagination -->
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <label class="text-xs text-white/60">Catégories disponibles:</label>
+                    <div class="text-xs text-white/60" *ngIf="totalCategories > 0">
+                      {{((currentPage - 1) * itemsPerPage) + 1}} - {{Math.min(currentPage * itemsPerPage, totalCategories)}} sur {{totalCategories}}
+                    </div>
+                  </div>
+                  
+                  <!-- Container scrollable avec pagination -->
+                  <div class="bg-white/10 border border-white/20 rounded-xl overflow-hidden">
+                    <!-- Liste des catégories -->
+                    <div class="max-h-48 overflow-y-auto custom-scrollbar">
+                      <div *ngIf="paginatedCategories.length === 0" class="text-white/60 text-center py-4">
+                        {{categories.length === 0 ? 'Chargement des catégories...' : 'Aucune catégorie disponible'}}
+                      </div>
+                      
+                      <div *ngFor="let category of paginatedCategories" 
+                           class="flex items-center justify-between p-3 hover:bg-white/10 transition-all duration-300 group border-b border-white/10 last:border-b-0">
+                        
+                        <!-- Radio button et nom de catégorie -->
+                        <label class="flex items-center gap-3 cursor-pointer flex-1">
+                          <input type="radio" 
+                                 name="categorySelection" 
+                                 [value]="category.id"
+                                 [checked]="productCategoryId === category.id"
+                                 (change)="onCategoryChange(category.id.toString())"
+                                 class="w-4 h-4 text-blue-600 bg-white/10 border-white/30 focus:ring-blue-500 focus:ring-2">
+                          <span class="text-white font-medium">{{category.name}}</span>
+                          <span class="text-white/60 text-sm">(ID: {{category.id}})</span>
+                        </label>
+                        
+                        <!-- Bouton de suppression -->
+                        <button type="button"
+                                (click)="confirmDeleteCategory(category, $event)"
+                                class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-1 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-md"
+                                title="Supprimer cette catégorie et tous ses produits">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <!-- Contrôles de pagination -->
+                    <div *ngIf="totalPages > 1" class="border-t border-white/20 p-3 bg-white/5">
+                      <div class="flex items-center justify-between">
+                        <!-- Bouton Précédent -->
+                        <button type="button"
+                                (click)="previousPage()"
+                                [disabled]="currentPage === 1"
+                                class="px-3 py-1 text-sm bg-white/10 hover:bg-white/20 disabled:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white transition-all duration-300">
+                          ← Précédent
+                        </button>
+                        
+                        <!-- Numéros de page -->
+                        <div class="flex gap-1">
+                          <button type="button"
+                                  *ngFor="let page of pages"
+                                  (click)="goToPage(page)"
+                                  [class]="currentPage === page ? 'bg-blue-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white/80'"
+                                  class="w-8 h-8 rounded-lg text-sm font-medium transition-all duration-300">
+                            {{page}}
+                          </button>
+                        </div>
+                        
+                        <!-- Bouton Suivant -->
+                        <button type="button"
+                                (click)="nextPage()"
+                                [disabled]="currentPage === totalPages"
+                                class="px-3 py-1 text-sm bg-white/10 hover:bg-white/20 disabled:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white transition-all duration-300">
+                          Suivant →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Bouton pour ajouter une nouvelle catégorie -->
+                <button type="button" 
+                        (click)="showAddCategoryInput()"
+                        class="mt-2 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-300 flex items-center gap-1">
+                  <span class="text-lg">+</span>
+                  Ajouter une nouvelle catégorie
+                </button>
+              </div>
+
+              <!-- Interface d'ajout de catégorie -->
+              <div *ngIf="isAddingCategory" class="space-y-3">
+                <div class="flex gap-2">
+                  <input type="text" 
+                         [(ngModel)]="newCategoryName" 
+                         placeholder="Nom de la nouvelle catégorie"
+                         class="flex-1 bg-white/10 border border-white/20 rounded-xl p-3 text-white text-base focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all duration-300 placeholder:text-white/60"
+                         (keydown.enter)="addNewCategory()"
+                         (keydown.escape)="cancelAddCategory()">
+                  
+                  <button type="button" 
+                          (click)="addNewCategory()"
+                          [disabled]="!newCategoryName.trim()"
+                          class="px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-xl text-white font-semibold transition-all duration-300 flex items-center gap-2">
+                    <span class="text-sm">✓</span>
+                    Ajouter
+                  </button>
+                  
+                  <button type="button" 
+                          (click)="cancelAddCategory()"
+                          class="px-4 py-3 bg-gray-600 hover:bg-gray-700 rounded-xl text-white font-semibold transition-all duration-300 flex items-center gap-2">
+                    <span class="text-sm">✕</span>
+                    Annuler
+                  </button>
+                </div>
+                
+                <div class="text-xs text-white/60">
+                  Appuyez sur Entrée pour ajouter ou Échap pour annuler
+                </div>
+              </div>
+
+              <!-- Indicateur de débogage -->
+              <div class="text-xs text-white/60" *ngIf="categories.length === 0">
+                🔄 Nombre de catégories chargées: {{categories.length}}
+              </div>
+            </div>
+            <div class="flex-1 flex flex-col gap-2">
+              <label class="text-sm font-semibold text-white/80">Unit price:</label>
+              <div class="flex bg-white/10 border border-white/20 rounded-xl overflow-hidden focus-within:border-white/50 focus-within:bg-white/15 transition-all duration-300">
+                <input type="number" [(ngModel)]="productPrice" class="flex-1 bg-transparent p-3 text-white text-base focus:outline-none">
+                <span class="px-4 py-3 bg-white/10 font-semibold border-l border-white/20">Dtn</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-8 lg:flex-row flex-col">
+            <div class="flex-1 flex flex-col gap-2">
+              <label class="text-sm font-semibold text-white/80">Name:</label>
+              <input type="text" [(ngModel)]="productName" class="bg-white/10 border border-white/20 rounded-xl p-3 text-white text-base focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all duration-300 placeholder:text-white/60" placeholder="T-shirt" required>
+            </div>
+            <div class="flex-1 flex flex-col gap-2">
+              <label class="text-sm font-semibold text-white/80">Stock:</label>
+              <input type="number" [(ngModel)]="productStock" min="0" class="bg-white/10 border border-white/20 rounded-xl p-3 text-white text-base focus:outline-none focus:border-white/50 focus:bg-white/15 transition-all duration-300 placeholder:text-white/60" placeholder="300">
+            </div>
+          </div>
+
+          <!-- Checkbox pour isClothing -->
+          <div class="flex gap-8 lg:flex-row flex-col">
+            <div class="flex items-center gap-3">
+              <input type="checkbox" id="isClothing" [(ngModel)]="isClothing" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+              <label for="isClothing" class="text-sm font-semibold text-white/80">Article vestimentaire</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages d'erreur et de succès -->
+    <div *ngIf="errorMessage" class="max-w-7xl mx-auto mb-6">
+      <div class="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-red-200">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">⚠️</span>
+          <span>{{errorMessage}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-5 justify-center lg:flex-row flex-col">
+      <button 
+        class="px-8 py-4 bg-white/10 text-white border-2 border-white/30 rounded-full text-base font-semibold cursor-pointer transition-all duration-300 hover:bg-white/20 hover:border-white/60 uppercase tracking-wide" 
+        (click)="goBackToProduct()"
+        [disabled]="isLoading">
+        Back to Products
+      </button>
+      
+      <button 
+        class="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white border-2 border-transparent rounded-full text-base font-semibold cursor-pointer transition-all duration-300 hover:from-green-600 hover:to-emerald-600 hover:-translate-y-1 hover:shadow-lg uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none" 
+        (click)="saveProduct()"
+        [disabled]="isLoading">
+        {{isEditMode ? 'Update Product' : 'Create Product'}}
+      </button>
+      
+      <button 
+        *ngIf="isEditMode && productId" 
+        class="px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white border-2 border-transparent rounded-full text-base font-semibold cursor-pointer transition-all duration-300 hover:from-red-600 hover:to-orange-600 hover:-translate-y-1 hover:shadow-lg uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none" 
+        (click)="deleteProduct()"
+        [disabled]="isLoading">
+        Delete Product
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="bg-black/30 p-5 flex items-center justify-between backdrop-blur-sm lg:flex-row flex-col gap-3">
+    <div>
+      <img src="assets/logo/logo-blanc.png" alt="StudyZone Store Logo" class="h-10">
+    </div>
+    <div class="text-sm text-white/80 text-center">
+      © 2024 <strong>Lorem Ipsum</strong>. All Rights Reserved.
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div *ngIf="showDeleteConfirmation" 
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  
+  <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl border border-red-500/30 shadow-2xl max-w-lg w-full p-6 transform animate-pulse">
+    
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
+        <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold text-white">Confirmer la suppression</h3>
+        <p class="text-red-300 text-sm">Cette action est irréversible</p>
+      </div>
+    </div>
+
+    <!-- Contenu -->
+    <div class="space-y-4">
+      <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+        <p class="text-white font-medium mb-2">
+          Êtes-vous sûr de vouloir supprimer la catégorie 
+          <span class="text-red-300 font-bold">"{{categoryToDelete?.name}}"</span> ?
+        </p>
+        
+        <div *ngIf="productsToDelete.length > 0" class="mt-3">
+          <p class="text-red-200 text-sm mb-2">
+            ⚠️ Cette action supprimera également <strong>{{productsToDelete.length}} produit(s)</strong> :
+          </p>
+          
+          <div class="bg-black/20 rounded-lg p-3 max-h-32 overflow-y-auto">
+            <ul class="space-y-1">
+              <li *ngFor="let product of productsToDelete" 
+                  class="text-red-100 text-sm flex items-center gap-2">
+                <span class="w-2 h-2 bg-red-400 rounded-full"></span>
+                <span class="font-medium">{{product.name}}</span>
+                <span class="text-red-300">({{product.price}} Dtn)</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div *ngIf="productsToDelete.length === 0" class="mt-3">
+          <p class="text-green-200 text-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Aucun produit ne sera affecté par cette suppression.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-3 mt-6">
+      <button type="button"
+              (click)="cancelDeleteCategory()"
+              class="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 rounded-xl text-white font-semibold transition-all duration-300">
+        Annuler
+      </button>
+      
+      <button type="button"
+              (click)="executeDeleteCategory()"
+              class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 rounded-xl text-white font-semibold transition-all duration-300 flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+        Supprimer définitivement
+      </button>
+    </div>
+    
+  </div>
+</div>
+
+<!-- Image Cropper Component -->
+<app-image-cropper
+  (imageCropped)="onImageCropped($event)"
+  (cancelled)="onCropCancelled()"
+  [aspectRatio]="1">
+</app-image-cropper>

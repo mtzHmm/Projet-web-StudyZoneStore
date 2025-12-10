@@ -1,0 +1,50 @@
+<div class="w-full max-w-[320px] h-[427px] relative overflow-hidden rounded-[20px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)] outline outline-[0.25px] outline-offset-[-0.25px] outline-neutral-200 backdrop-blur-lg hover:transform hover:scale-105 transition-all duration-300 mx-auto"
+  style="background: radial-gradient(ellipse 56.46% 87.73% at 46.20% 46.17%, rgba(0, 0, 0, 0) 0%, rgba(146.11, 53.55, 255, 0.10) 100%);">
+  
+  <!-- Image du produit -->
+  <img 
+    [src]="product.imageUrl || 'https://placehold.co/584x252'" 
+    [alt]="product.name"
+    class="w-full h-64 absolute left-0 top-[39px] object-cover">
+
+  <!-- Section informations produit -->
+  <div class="w-full h-[133px] p-4 sm:p-6 left-0 top-[294px] absolute rounded-[10px] flex flex-col justify-center items-center gap-3">
+    <div class="w-full flex flex-col justify-start items-center gap-2">
+      <!-- Nom du produit -->
+      <div class="w-full text-center text-white text-base sm:text-lg font-black font-['Poppins'] uppercase italic px-2">
+        {{product.name}}
+      </div>
+      
+      <!-- Prix -->
+      <div class="flex justify-center items-center gap-1.5">
+        <div class="text-white text-xl sm:text-2xl font-normal font-['Poppins'] uppercase">
+          {{product.price}}
+        </div>
+        <div class="text-white text-xl sm:text-2xl font-normal font-['Poppins'] uppercase">
+          DT
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bouton View Details - Modernisé -->
+    <button 
+      class="px-4 py-2 bg-violet-700 hover:bg-violet-600 rounded-lg text-white text-sm font-medium font-['Poppins'] transition-colors"
+      (click)="onViewDetails()">
+      View Details
+    </button>
+  </div>
+
+  <!-- Icône favori (top right) - Interactive -->
+  <div class="w-4 h-4 right-[16px] sm:right-[24px] top-[8px] sm:top-[12px] absolute z-10">
+    <button 
+      (click)="toggleFavorite($event)"
+      [class]="'transition-all duration-300 hover:scale-110 ' + 
+               (isFavorite() ? 'text-yellow-400' : 'text-white hover:text-yellow-300')"
+      title="{{isFavorite() ? 'Remove from favorites' : 'Add to favorites'}}">
+      <svg class="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+    </button>
+  </div>
+
+</div>

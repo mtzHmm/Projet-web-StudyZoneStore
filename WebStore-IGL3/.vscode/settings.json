@@ -1,0 +1,7 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "terminal.integrated.env.windows": {
+    "PATH": "${env:PATH};C:\\Users\\user\\Downloads\\apache-maven-3.9.11-bin\\apache-maven-3.9.11\\bin"
+  }
+}

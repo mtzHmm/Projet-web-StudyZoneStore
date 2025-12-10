@@ -1,0 +1,116 @@
+<div class="h-screen flex flex-col justify-center items-center px-4 overflow-hidden -mt-8">
+  
+  <!-- Clothing Products Layout -->
+  <div *ngIf="product?.isClothing" class="bg-white/10 backdrop-blur-md rounded-2xl p-8 w-fit max-w-5xl border border-white/20 shadow-lg mb-4">
+    <div class="flex flex-col lg:flex-row gap-8 items-center justify-center">
+      
+      <!-- Product Image - Left Side -->
+      <div class="flex-shrink-0">
+        <img 
+          [src]="product?.imageUrl || '/assets/hoodie.svg'" 
+          [alt]="product?.name || 'Product'"
+          class="w-72 h-80 object-cover rounded-lg"
+        />
+      </div>
+      
+      <!-- Product Details - Right Side -->
+      <div class="flex-shrink-0 text-left min-w-[350px]">
+        <!-- Product Name -->
+        <h1 class="text-3xl font-bold text-white mb-4 font-['Poppins'] italic">
+          {{ product?.name || 'SWEAT-SHIRT EXCLUSIVE' }}
+        </h1>
+        
+        <!-- Price -->
+        <p class="text-3xl font-bold text-white mb-5 font-['Poppins']">
+          {{ product?.price || 45 }} DT <span class="text-gray-400">-</span>
+        </p>
+        
+        <!-- Material and Printing -->
+        <div class="flex justify-start gap-8 mb-5 text-sm text-gray-300 font-['Poppins']">
+          <div>
+            <span class="block text-gray-400">Material:</span>
+            <span>cotton</span>
+          </div>
+          <div>
+            <span class="block text-gray-400">Printing:</span>
+            <span>screen-printed logo</span>
+          </div>
+        </div>
+        
+        <!-- Sizes (only for clothing items) -->
+        <div class="mb-5" *ngIf="product?.isClothing && !isNonClothingProduct()">
+          <span class="block text-gray-400 text-sm mb-3 font-['Poppins']">Size:</span>
+          <div class="flex justify-start gap-2">
+            <button 
+              *ngFor="let size of sizes" 
+              (click)="selectSize(size)"
+              [class]="'w-8 h-8 border text-white text-sm transition-colors font-[\'Poppins\'] ' + 
+                      (selectedSize === size ? 'bg-violet-700 border-violet-700' : 'border-gray-400 hover:border-violet-700')"
+            >
+              {{ size }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- Add to Cart Button -->
+        <button 
+          (click)="addToCart()"
+          [disabled]="(product?.isClothing && !isNonClothingProduct()) && !selectedSize"
+          class="px-8 py-3 bg-violet-700 hover:bg-violet-600 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg text-white font-medium font-['Poppins'] transition-colors"
+        >
+          Add to cart
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Non-Clothing Products Layout (Simplified) -->
+  <div *ngIf="product && !product.isClothing" class="bg-white/10 backdrop-blur-md rounded-2xl p-8 w-fit max-w-4xl border border-white/20 shadow-lg mb-4">
+    <div class="flex flex-col lg:flex-row gap-8 items-center justify-center">
+      
+      <!-- Product Image - Left Side -->
+      <div class="flex-shrink-0">
+        <img 
+          [src]="product?.imageUrl || '/assets/placeholder-product.jpg'" 
+          [alt]="product?.name || 'Product'"
+          class="w-64 h-72 object-cover rounded-lg"
+        />
+      </div>
+      
+      <!-- Product Details - Right Side (Simplified) -->
+      <div class="flex-shrink-0 text-left min-w-[300px]">
+        <!-- Product Name -->
+        <h1 class="text-3xl font-bold text-white mb-6 font-['Poppins'] italic">
+          {{ product?.name }}
+        </h1>
+        
+        <!-- Price -->
+        <p class="text-3xl font-bold text-white mb-6 font-['Poppins']">
+          {{ product?.price }} DT <span class="text-gray-400">-</span>
+        </p>
+        
+        <!-- Material (if available) -->
+        <div *ngIf="product?.description" class="mb-6 text-sm text-gray-300 font-['Poppins']">
+          <span class="block text-gray-400 mb-2">Material:</span>
+          <span>{{ product?.description }}</span>
+        </div>
+        
+        <!-- Add to Cart Button -->
+        <button 
+          (click)="addToCart()"
+          class="px-8 py-3 bg-violet-700 hover:bg-violet-600 rounded-lg text-white font-medium font-['Poppins'] transition-colors"
+        >
+          Add to cart
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Back to Shop Button - Outside the card -->
+  <button 
+    (click)="backToShop()"
+    class="px-8 py-3 bg-violet-700 hover:bg-violet-600 rounded-lg text-white font-medium font-['Poppins'] transition-colors"
+  >
+    Back to shop
+  </button>
+</div>

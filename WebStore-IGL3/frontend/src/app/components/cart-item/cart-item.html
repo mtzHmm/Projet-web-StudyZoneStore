@@ -1,0 +1,55 @@
+<div class="self-stretch inline-flex justify-start items-center gap-10">
+  <!-- Image du produit -->
+  <div class="w-20 h-20 relative bg-neutral-900/50 rounded-[20px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)] outline outline-[0.25px] outline-offset-[-0.25px] outline-neutral-200 backdrop-blur-lg overflow-hidden">
+    <img class="w-20 h-20 left-[-4px] top-0 absolute" [src]="item.imageUrl" [alt]="item.name" />
+  </div>
+  
+  <!-- Détails du produit -->
+  <div class="w-[814px] inline-flex flex-col justify-start items-center gap-5">
+    <!-- Contrôles de quantité -->
+    <div class="inline-flex justify-start items-start gap-3.5">
+      <button 
+        (click)="increaseQuantity()"
+        class="w-7 h-7 p-2.5 rounded-md outline outline-1 outline-offset-[-1px] outline-white flex justify-center items-center gap-2.5 hover:bg-white/10 transition-colors cursor-pointer">
+        <div class="text-center justify-center text-white text-2xl font-normal font-['Roboto']">+</div>
+      </button>
+      
+      <div class="w-4 h-7 text-center justify-center text-white text-base font-normal font-['Roboto']">
+        {{ item.quantity }}
+      </div>
+      
+      <button 
+        (click)="decreaseQuantity()"
+        class="w-7 h-7 p-2.5 rounded-md outline outline-1 outline-offset-[-1px] outline-white flex justify-center items-center gap-2.5 hover:bg-white/10 transition-colors cursor-pointer">
+        <div class="text-center justify-center text-white text-2xl font-normal font-['Roboto']">-</div>
+      </button>
+    </div>
+    
+    <!-- Prix total -->
+    <div class="text-center justify-start text-white text-xl font-normal font-['Poppins']">
+      {{ item.totalPrice }} DT
+    </div>
+    
+    <!-- Prix unitaire -->
+    <div class="w-32 h-7 text-center justify-start text-white text-xl font-normal font-['Poppins']">
+      {{ item.price }} DT
+    </div>
+    
+    <!-- Bouton supprimer -->
+    <button 
+      (click)="onRemove()"
+      class="w-10 h-8 relative overflow-hidden hover:bg-red-500/20 transition-colors rounded cursor-pointer">
+      <div class="w-7 h-6 left-[4.76px] top-[3.45px] absolute bg-red-500"></div>
+    </button>
+    
+    <!-- Nom du produit -->
+    <div class="bg-white/0 flex flex-col justify-center items-start gap-[5px]">
+      <div class="w-32 h-9 justify-center text-white text-xl font-normal font-['Poppins']">
+        {{ item.name }}
+      </div>
+    </div>
+    
+    <!-- Séparateur -->
+    <div class="self-stretch h-0 outline outline-1 outline-offset-[-0.50px] outline-white"></div>
+  </div>
+</div>

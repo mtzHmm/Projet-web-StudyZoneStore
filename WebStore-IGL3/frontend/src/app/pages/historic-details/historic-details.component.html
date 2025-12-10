@@ -1,0 +1,117 @@
+<div class="w-full max-w-6xl mx-auto mt-10 mb-20 p-6 rounded-2xl bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,_rgba(0,0,0,0)_0%,_rgba(146,54,255,0.1)_100%)]
+            rounded-[40px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)]
+            outline outline-1 outline-black backdrop-blur-lg
+            flex flex-col overflow-y-auto">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold mt-10 mb-4 text-violet-400">Cart of the order #{{ orderId }}</h2>
+
+    <!-- Barre de recherche -->
+    <div class="flex items-center gap-2" *ngIf="!isLoading && !errorMessage">
+      <span class="text-zinc-400">🔎</span>
+      <input [(ngModel)]="searchTerm"
+             placeholder="Search for a product..."
+             class="w-72 p-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white outline-none" />
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <div class="text-violet-400 text-xl">
+      <span class="animate-spin">⏳</span> Chargement des détails de la commande...
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="bg-red-900/50 border border-red-600 rounded-xl p-6 text-center">
+    <div class="text-red-400 text-xl mb-2">❌ Erreur</div>
+    <div class="text-red-300">{{ errorMessage }}</div>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!isLoading && !errorMessage" class="overflow-hidden rounded-xl border border-zinc-700">
+    <!-- Table header -->
+    <div class="grid grid-cols-4 bg-zinc-800 text-zinc-400 font-semibold text-lg px-6 py-3">
+      <div>ID</div>
+      <div>Produit</div>
+      <div>Quantité</div>
+      <div>Prix</div>
+    </div>
+
+    <!-- Table rows -->
+    <div *ngFor="let item of filteredItems"
+         class="grid grid-cols-4 px-6 py-4 border-t border-zinc-700 items-center hover:bg-zinc-800/40 transition text-white">
+      
+      <div>{{ item.id }}</div>
+      <div>{{ item.product.name }}</div>
+      <div>{{ item.quantity }}</div>
+      <div class="text-yellow-400 font-bold">{{ item.product.price }} DT</div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="filteredItems.length === 0" class="text-center py-12 text-zinc-400">
+      <div class="text-4xl mb-4">📦</div>
+      <div>Aucun produit trouvé</div>
+    </div>
+  </div>
+
+  <!-- Total -->
+  <div *ngIf="!isLoading && !errorMessage && items.length > 0" class="text-right mt-6 text-xl font-bold text-yellow-400">
+    Total : {{ getTotal() }} DT
+  </div>
+
+  <!-- Order Details Section -->
+  <div *ngIf="order" class="mt-8 p-6 bg-zinc-800/50 rounded-xl border border-zinc-700">
+    <h3 class="text-xl font-bold text-violet-400 mb-4">Order Details</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Order Info -->
+      <div class="space-y-2">
+        <label class="text-sm font-semibold text-zinc-400">Order Date:</label>
+        <div class="p-3 bg-zinc-900 rounded-lg border border-zinc-700 text-white">
+          <span class="text-zinc-300">�</span> {{ order.orderDate | date:'medium' }}
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="space-y-2">
+        <label class="text-sm font-semibold text-zinc-400">Status:</label>
+        <div class="p-3 bg-zinc-900 rounded-lg border border-zinc-700 text-white flex items-center gap-2">
+          <span *ngIf="order.status === 'pending'" class="text-yellow-400">⏳</span>
+          <span *ngIf="order.status === 'confirmed'" class="text-green-400">✅</span>
+          <span *ngIf="order.status === 'delivered'" class="text-blue-400">�</span>
+          <span class="font-medium">{{ order.status | titlecase }}</span>
+        </div>
+      </div>
+
+      <!-- Delivery Method -->
+      <div class="space-y-2">
+        <label class="text-sm font-semibold text-zinc-400">Delivery Method:</label>
+        <div class="p-3 bg-zinc-900 rounded-lg border border-zinc-700 text-white">
+          <span class="text-zinc-300">🚚</span> {{ order.deliveryMethod }}
+        </div>
+      </div>
+
+      <!-- Customer Info -->
+      <div class="space-y-2">
+        <label class="text-sm font-semibold text-zinc-400">Customer:</label>
+        <div class="p-3 bg-zinc-900 rounded-lg border border-zinc-700 text-white">
+          <span class="text-zinc-300">👤</span> {{ order.user.firstName }} {{ order.user.lastName }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Boutons de navigation -->
+  <div class="mt-6 flex justify-center gap-4">
+    <button (click)="goBackToUserHistory()"
+        class="px-6 py-3 bg-violet-600 hover:bg-violet-700 rounded-xl shadow-lg text-white font-semibold transition-colors">
+      ⬅ Retour à l'utilisateur
+    </button>
+    <button (click)="goBackToUserManagement()"
+        class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg text-white font-semibold transition-colors">
+      🏠 Back to User Management
+    </button>
+  </div>
+</div>

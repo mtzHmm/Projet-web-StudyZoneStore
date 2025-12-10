@@ -1,0 +1,87 @@
+<!-- Category List Container -->
+<div #categoryScroll
+     class="h-[400px] w-[1000px] mx-auto mt-10
+            bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,_rgba(0,0,0,0)_0%,_rgba(146,54,255,0.1)_100%)]
+            rounded-[40px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)]
+            outline outline-1 outline-black backdrop-blur-lg
+            flex flex-col overflow-y-auto scrollbar-transparent">
+
+  <!-- Header -->
+  <div class="w-[900px] mx-auto my-3 text-zinc-400 flex justify-between text-lg font-semibold px-4">
+    <div class="w-1/5">ID</div>
+    <div class="w-2/5">Category Name</div>
+    <div class="w-2/5 text-right">Products</div>
+  </div>
+
+  <!-- Category Rows -->
+  <div *ngFor="let category of filteredCategories"
+       class="w-[900px] h-16 mx-auto my-2 rounded-2xl outline outline-1 outline-zinc-700 
+              flex items-center justify-between px-4 text-white hover:bg-zinc-800/40 transition">
+
+    <!-- ID -->
+    <div class="w-1/5">
+      {{ category.id }}
+    </div>
+
+    <!-- Category Name -->
+    <div class="w-2/5">
+      <span *ngIf="!category.editing">{{ category.categoryName }}</span>
+      <input *ngIf="category.editing"
+             [(ngModel)]="category.categoryName"
+             class="bg-zinc-900 border border-zinc-700 rounded px-2 text-sm w-40">
+    </div>
+
+    <!-- Products -->
+    <div class="w-2/5 flex items-center justify-end gap-2">
+      <span *ngIf="!category.editing" class="text-blue-400 px-2 py-1 bg-zinc-800 rounded-md">
+        {{ category.products.join(', ') || 'No products' }}
+      </span>
+      <input *ngIf="category.editing"
+             [(ngModel)]="category.products"
+             placeholder="Comma separated"
+             class="bg-zinc-900 border border-zinc-700 rounded px-2 text-sm w-48">
+
+      <!-- Edit / Save Button -->
+      <div (click)="toggleEdit(category)"
+           class="w-8 h-8 flex items-center justify-center bg-zinc-800 rounded-md hover:bg-violet-700 cursor-pointer transition">
+        {{ category.editing ? '✔' : '🖉' }}
+      </div>
+
+      <!-- Delete Button -->
+      <div (click)="deleteCategory(category)"
+           class="w-8 h-8 flex items-center justify-center bg-zinc-800 rounded-md hover:bg-red-600 cursor-pointer transition">
+        🗑
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="w-[900px] mx-auto my-4 flex justify-center items-center">
+    <div class="flex items-center gap-2 text-violet-400">
+      <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-violet-400"></div>
+      <span>Chargement des catégories...</span>
+    </div>
+  </div>
+
+  <!-- No more data indicator -->
+  <div *ngIf="!hasMoreData && filteredCategories.length > 0 && !isLoading" 
+       class="w-[900px] mx-auto my-4 text-center text-zinc-400">
+    Toutes les catégories ont été affichées
+  </div>
+
+  <!-- No results found -->
+  <div *ngIf="filteredCategories.length === 0 && !isLoading" 
+       class="w-[900px] mx-auto my-8 text-center text-zinc-400">
+    Aucune catégorie trouvée
+  </div>
+</div>
+
+<!-- Add Category Button -->
+<div class="flex justify-center mt-4 mb-6">
+  <button (click)="addCategory()" class="w-48 h-14 bg-violet-700 rounded-md cursor-pointer 
+                 hover:bg-violet-600 transition shadow-lg shadow-violet-500/30">
+    <span class="text-white text-xl font-medium font-['Poppins']">
+      Add Category
+    </span>
+  </button>
+</div>

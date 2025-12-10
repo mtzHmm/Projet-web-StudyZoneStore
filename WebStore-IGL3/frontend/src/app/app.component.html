@@ -1,0 +1,13 @@
+<!-- Header/Navbar -->
+<app-navbar *ngIf="showNavbar"></app-navbar>
+
+<!-- Main Content -->
+<main class="flex-1 min-h-screen bg-transparent" [class.overflow-hidden]="!showNavbar">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Footer (hidden on checkout page) -->
+<app-footer *ngIf="showFooter"></app-footer>
+
+<!-- Notification Container -->
+<app-notification-container></app-notification-container>

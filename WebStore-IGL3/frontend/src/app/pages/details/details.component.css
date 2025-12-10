@@ -1,0 +1,6 @@
+/* Details page - no scroll */
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}

@@ -1,0 +1,7 @@
+{
+  "name": "webstore-igl3",
+  "version": "1.0.0",
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}

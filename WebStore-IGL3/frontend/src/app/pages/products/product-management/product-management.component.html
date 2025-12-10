@@ -1,0 +1,87 @@
+<!-- Product List Container -->
+<div #productScroll
+     class="h-[400px] w-[1212px] mx-auto mt-10
+            bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,_rgba(0,0,0,0)_0%,_rgba(146,54,255,0.1)_100%)]
+            rounded-[40px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)]
+            outline outline-1 outline-black backdrop-blur-lg
+            flex flex-col overflow-y-auto
+            scrollbar-transparent">
+
+  <!-- Header -->
+  <div class="w-[1134.56px] mx-auto my-3 text-zinc-400 flex justify-between text-lg font-semibold px-4">
+    <div class="w-1/5">Product</div>
+    <div class="w-1/5">Unit Price</div>
+    <div class="w-1/5">Stock</div>
+    <div class="w-1/5">Reference</div>
+    <div class="w-1/5 text-right">Category</div>
+  </div>
+
+  <!-- Product Rows -->
+  <div *ngFor="let product of filteredProducts"
+       class="w-[1134.56px] h-16 mx-auto my-2 rounded-2xl outline outline-1 outline-zinc-700 
+              flex items-center justify-between px-4 text-white hover:bg-zinc-800/40 transition">
+
+    <!-- Product Name & Image -->
+    <div class="w-1/5 flex items-center gap-3">
+      <img [src]="product.imageUrl || 'https://via.placeholder.com/40'" 
+           [alt]="product.name" 
+           class="rounded-full w-10 h-10 border border-zinc-700 object-cover">
+      <span>{{ product.name }}</span>
+    </div>
+
+    <!-- Price -->
+    <div class="w-1/5 text-yellow-600 font-bold">
+      <span>{{ product.price }} DT</span>
+    </div>
+
+    <!-- Stock -->
+    <div class="w-1/5">
+      <span>{{ product.stock }}</span>
+    </div>
+
+    <!-- Reference -->
+    <div class="w-1/5">
+      <span>{{ product.reference || 'N/A' }}</span>
+    </div>
+
+    <!-- Category & Actions -->
+    <div class="w-1/5 flex items-center justify-end gap-2">
+      <span class="text-green-400 px-2 py-1 bg-zinc-800 rounded-md">
+        {{ product.category?.name || 'N/A' }}
+      </span>
+
+      <!-- Edit Button -->
+      <div (click)="editProduct(product)"
+           class="w-8 h-8 flex items-center justify-center bg-zinc-800 rounded-md hover:bg-violet-700 cursor-pointer transition">
+        🖉
+      </div>
+
+      <!-- Delete Button -->
+      <div (click)="deleteProduct(product)"
+           class="w-8 h-8 flex items-center justify-center bg-zinc-800 rounded-md hover:bg-red-600 cursor-pointer transition">
+        🗑
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="w-[1134.56px] mx-auto my-4 flex justify-center items-center">
+    <div class="flex items-center gap-2 text-violet-400">
+      <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-violet-400"></div>
+      <span>Chargement des produits...</span>
+    </div>
+  </div>
+
+  <!-- No more data indicator -->
+  <div *ngIf="!hasMoreData && filteredProducts.length > 0 && !isLoading" 
+       class="w-[1134.56px] mx-auto my-4 text-center text-zinc-400">
+    Tous les produits ont été affichés
+  </div>
+
+  <!-- No results found -->
+  <div *ngIf="filteredProducts.length === 0 && !isLoading" 
+       class="w-[1134.56px] mx-auto my-8 text-center text-zinc-400">
+    Aucun produit trouvé
+  </div>
+
+</div>

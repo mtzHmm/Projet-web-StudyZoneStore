@@ -1,0 +1,100 @@
+<div class="min-h-screen">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+    
+    <!-- Cart Totals responsive -->
+    <div class="w-80 h-64 right-4 lg:right-12 top-32 absolute bg-[radial-gradient(ellipse_56.46%_87.73%_at_46.20%_46.17%,_rgba(0,_0,_0,_0)_0%,_rgba(146.11,_53.55,_255,_0.10)_100%)] rounded-[20px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)] outline outline-[0.25px] outline-offset-[-0.25px] outline-neutral-200 overflow-hidden flex flex-col items-center justify-center gap-4 p-6">
+        <div class="text-center text-white text-2xl font-normal font-['Poppins']">Cart Totals</div>
+        <div class="text-center text-white text-3xl font-bold font-['Poppins']">{{ totalAmount }} DT</div>
+        <button 
+            (click)="checkout()" 
+            [disabled]="loading || cartItems.length === 0" 
+            class="w-48 h-12 bg-violet-700 rounded-[20px] text-white text-lg font-medium font-['Poppins'] hover:bg-violet-600 transition-colors flex items-center justify-center disabled:bg-gray-500 disabled:cursor-not-allowed">
+            <span *ngIf="!loading">Check Out</span>
+            <span *ngIf="loading">Processing...</span>
+        </button>
+    </div>
+    
+    <!-- Container principal responsive pour le contenu -->
+        <!-- En-têtes des colonnes -->
+        <div class="flex justify-start items-center mb-8 max-w-4xl">
+            <div class="w-1/4 text-center text-white text-lg lg:text-xl font-normal font-['Poppins']">Product name</div>
+            <div class="w-1/4 text-center text-white text-lg lg:text-xl font-normal font-['Poppins']">Unit Price</div>
+            <div class="w-1/4 text-center text-white text-lg lg:text-xl font-normal font-['Poppins']">Quantity</div>
+            <div class="w-1/4 text-center text-white text-lg lg:text-xl font-normal font-['Poppins']">Total Price</div>
+            <div class="w-16"></div> <!-- Espace pour le bouton supprimer -->
+        </div>
+        
+        <!-- Loading indicator -->
+        <div *ngIf="loading" class="flex justify-center items-center py-8">
+            <div class="text-white text-lg">Loading cart...</div>
+        </div>
+
+        <!-- Error message -->
+        <div *ngIf="error && !loading" class="flex justify-center items-center py-8">
+            <div class="text-red-400 text-lg">{{ error }}</div>
+        </div>
+
+        <!-- Empty cart message -->
+        <div *ngIf="!loading && !error && cartItems.length === 0" class="flex justify-center items-center py-8">
+            <div class="text-white text-lg">Your cart is empty</div>
+        </div>
+
+        <!-- Cart products list -->
+        <div *ngIf="!loading && !error && cartItems.length > 0" class="flex flex-col gap-0 max-w-4xl">
+            <div *ngFor="let item of cartItems; trackBy: trackByItemId; let last = last" class="w-full">
+                <!-- Ligne de produit -->
+                <div class="w-full flex justify-start items-center py-4">
+                    <!-- Image du produit + Nom -->
+                    <div class="w-1/4 flex justify-start items-center gap-3">
+                        <div class="w-16 h-16 lg:w-20 lg:h-20 relative bg-gradient-to-br from-gray-700 to-gray-900 rounded-[20px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)] outline outline-[0.25px] outline-offset-[-0.25px] outline-neutral-200 backdrop-blur-lg overflow-hidden flex-shrink-0">
+                            <img 
+                                class="w-full h-full object-cover" 
+                                [src]="item.imageUrl || 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=82&h=82&fit=crop&crop=center'" 
+                                [alt]="item.name"
+                                (error)="handleImageError($event)"
+                            />
+                        </div>
+                        <div class="text-white text-sm lg:text-xl font-normal font-['Poppins'] truncate">{{ item.name }}</div>
+                    </div>
+                    
+                    <!-- Prix unitaire -->
+                    <div class="w-1/4 text-center text-white text-sm lg:text-xl font-normal font-['Poppins']">{{ item.price }} DT</div>
+                    
+                    <!-- Quantité avec contrôles -->
+                    <div class="w-1/4 flex justify-center items-center gap-2 lg:gap-3">
+                        <button (click)="decreaseQuantity(item.id)" class="w-6 h-6 lg:w-7 lg:h-7 p-1 lg:p-2.5 rounded-md outline outline-1 outline-offset-[-1px] outline-white flex justify-center items-center hover:bg-white/10 transition-colors">
+                            <div class="text-center text-white text-lg lg:text-2xl font-normal font-['Roboto']">-</div>
+                        </button>
+                        <div class="w-6 lg:w-8 text-center text-white text-sm lg:text-base font-normal font-['Roboto']">{{ item.quantity }}</div>
+                        <button (click)="increaseQuantity(item.id)" class="w-6 h-6 lg:w-7 lg:h-7 p-1 lg:p-2.5 rounded-md outline outline-1 outline-offset-[-1px] outline-white flex justify-center items-center hover:bg-white/10 transition-colors">
+                            <div class="text-center text-white text-lg lg:text-2xl font-normal font-['Roboto']">+</div>
+                        </button>
+                    </div>
+                    
+                    <!-- Total price -->
+                    <div class="w-1/4 text-center text-white text-sm lg:text-xl font-normal font-['Poppins']">{{ item.totalPrice }} DT</div>
+                    
+                    <!-- Bouton supprimer -->
+                    <div class="w-16 flex justify-center">
+                        <button (click)="onRemoveItem(item.id)" >
+                            <svg class="w-3 h-3 lg:w-4 lg:h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M3 6h18v2H3V6zm2 3v11c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V9H5zm3 2h2v7H8v-7zm4 0h2v7h-2v-7z"/>
+                                <path d="M10 2h4v2h5v2H5V4h5V2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Ligne de séparation après chaque produit -->
+                <div class="w-full max-w-4xl h-0 border-b border-white/30 mb-2"></div>
+            </div>
+        </div>
+        
+        <!-- Bouton retour à la boutique responsive -->
+        <div class="flex justify-center mt-8 max-w-4xl">
+            <button (click)="goBackToShop()" class="w-48 h-14 bg-violet-700 rounded-md overflow-hidden hover:bg-violet-600 transition-colors flex items-center justify-center">
+                <div class="text-center text-white text-xl font-medium font-['Poppins']">Back to shop</div>
+            </button>
+        </div>
+    </div>
+</div>

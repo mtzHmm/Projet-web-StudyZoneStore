@@ -1,0 +1,143 @@
+<div class="min-h-screen flex items-center justify-start p-4">
+  <div class="flex gap-25 max-w-7xl w-full pr-8">
+    <app-sidebar></app-sidebar>
+<div class="w-full max-w-6xl mx-auto mt-10 mb-20 p-6 rounded-2xl bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,_rgba(0,0,0,0)_0%,_rgba(146,54,255,0.1)_100%)]
+            rounded-[40px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)]
+            outline outline-1 outline-black backdrop-blur-lg
+            flex flex-col overflow-y-auto">
+  
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h2 class="text-3xl font-bold mt-10 mb-4 text-violet-400">Order Management</h2>
+      <p class="text-zinc-400">{{filteredOrders.length}} commande(s) trouvée(s) sur {{totalElements}} au total</p>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="flex items-center gap-2">
+      <span class="text-zinc-400">🔎</span>
+      <input [(ngModel)]="searchTerm"
+             placeholder="Search by customer, email, ID..."
+             class="w-72 p-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white outline-none" />
+    </div>
+  </div>
+
+  <!-- Loading & Error States -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400"></div>
+    <span class="ml-2 text-white">Chargement des commandes...</span>
+  </div>
+
+  <div *ngIf="errorMessage" class="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4 mb-6 text-yellow-200">
+    ⚠️ {{errorMessage}}
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-hidden rounded-xl border border-zinc-700">
+  <!-- Table Container -->
+  <div *ngIf="!isLoading" class="overflow-hidden rounded-xl border border-zinc-700">
+    <!-- Table header -->
+    <div class="grid grid-cols-6 bg-zinc-800 text-zinc-400 font-semibold text-lg px-6 py-3">
+      <div>ID</div>
+      <div>Client</div>
+      <div>Total</div>
+      <div>Statut</div>
+      <div>Date</div>
+      <div class="text-center">Actions</div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="orders.length === 0 && !isLoading" class="px-6 py-12 text-center text-zinc-400">
+      <p class="text-xl mb-2">Aucune commande trouvée</p>
+      <p class="text-sm">{{searchTerm ? 'Aucun résultat pour votre recherche' : 'Aucune commande disponible'}}</p>
+    </div>
+
+    <!-- Table rows -->
+    <div *ngFor="let order of paginatedOrders"
+         class="grid grid-cols-6 px-6 py-4 border-t border-zinc-700 items-center hover:bg-zinc-800/40 transition text-white">
+      
+      <div class="font-mono text-violet-300">#{{ order.id }}</div>
+      <div>
+        <div class="font-medium">{{ getClientName(order) }}</div>
+      </div>
+      <div class="text-yellow-400 font-bold">{{ order.totalAmount?.toFixed(2) }} DT</div>
+      <div [ngClass]="getStatusColor(order.status)" class="font-medium">
+        {{ getStatusLabel(order.status) }}
+      </div>
+      <div class="text-sm">
+        <div>{{ formatDate(order.orderDate) }}</div>
+        <div class="text-zinc-400">{{ order.deliveryMethod }}</div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-center gap-2 text-xl">
+        <button (click)="viewOrder(order)" 
+                class="w-8 h-8 flex items-center justify-center bg-zinc-800 rounded-md hover:bg-violet-400 cursor-pointer transition"
+                title="Voir détails">
+          🛒
+        </button>
+        
+        <!-- Bouton Annuler/Supprimer (actif seulement si PENDING) -->
+        <button (click)="order.status === 'pending' ? deleteOrder(order) : null" 
+                [disabled]="order.status !== 'pending'"
+                [class]="order.status === 'pending'
+                  ? 'w-8 h-8 flex items-center justify-center bg-zinc-800 rounded-md hover:bg-red-600 cursor-pointer transition'
+                  : 'w-8 h-8 flex items-center justify-center bg-zinc-700 text-zinc-500 cursor-not-allowed rounded-md transition'"
+                [title]="order.status === 'pending' 
+                  ? 'Annuler la commande' 
+                  : 'Annulation impossible (commande confirmée/livrée/annulée)'">
+          🗑
+        </button>
+        
+        <!-- Bouton Confirmer (visible si PENDING) -->
+        <button *ngIf="order.status === 'pending'"
+                (click)="confirmOrder(order)"
+                class="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-green-700 cursor-pointer rounded-md transition"
+                title="Confirmer la commande">
+          ✅
+        </button>
+        
+        <!-- Bouton Livrer (visible si CONFIRMED) -->
+        <button *ngIf="order.status === 'confirmed'"
+                (click)="deliverOrder(order)"
+                class="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-blue-600 cursor-pointer rounded-md transition"
+                title="Marquer comme livrée">
+          🚚
+        </button>
+        
+        <!-- Icône Livrée (visible si DELIVERED - désactivé) -->
+        <div *ngIf="order.status === 'delivered'"
+             class="w-8 h-8 flex items-center justify-center bg-zinc-700 text-zinc-500 cursor-not-allowed rounded-md"
+             title="Commande livrée">
+          📦
+        </div>
+        
+        <!-- Icône Annulée (visible si CANCELLED - désactivé) -->
+        <div *ngIf="order.status === 'cancelled'"
+             class="w-8 h-8 flex items-center justify-center bg-zinc-700 text-zinc-500 cursor-not-allowed rounded-md"
+             title="Commande annulée">
+          ❌
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!isLoading && totalPages > 1" class="flex justify-between items-center mt-6">
+    <div class="text-zinc-400">
+      Page {{ currentPage + 1 }} sur {{ totalPages }}
+    </div>
+    <div class="flex gap-2">
+      <button (click)="previousPage()" 
+              [disabled]="currentPage === 0"
+              class="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed">
+        ← Précédent
+      </button>
+      <button (click)="nextPage()" 
+              [disabled]="currentPage >= totalPages - 1"
+              class="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed">
+        Suivant →
+      </button>
+    </div>
+  </div>
+</div>

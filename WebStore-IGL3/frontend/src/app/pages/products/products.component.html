@@ -1,0 +1,39 @@
+<div class="min-h-screen bg-gray-900 flex items-center justify-start p-4">
+  <div class="flex gap-4 max-w-6xl w-full">
+    <app-sidebar class="w-56 sticky top-4 self-start h-[calc(100vh-2rem)] overflow-hidden"></app-sidebar>
+    <div class="flex-1 max-w-4xl text-white p-4 space-y-4">
+
+      <!-- Gestion des produits -->
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-3xl font-bold text-violet-400">Product Management</h2>
+        <div class="flex gap-4 items-center">
+          <input [(ngModel)]="searchTerm"
+                 placeholder="Search product by name, reference or category..."
+                 class="w-96 p-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white outline-none" />
+          <button (click)="addProduct()" 
+                  class="px-6 py-2 bg-violet-700 text-white rounded-lg hover:bg-violet-600 transition whitespace-nowrap">
+            Add Product
+          </button>
+        </div>
+      </div>
+      <div class="max-w-full">
+        <app-product-management [searchTerm]="searchTerm"></app-product-management>
+      </div>
+
+      <!-- Category Management - temporarily commented out -->
+      <!-- 
+      <div class="flex justify-between items-center mt-4 mb-2">
+        <h2 class="text-xl font-bold text-violet-400">Category Management</h2>
+        <input [(ngModel)]="categorySearchTerm"
+               placeholder="Search categories..."
+               class="w-80 p-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white outline-none" />
+      </div>
+      <div class="max-w-full">
+        <app-category-management [searchTerm]="categorySearchTerm"></app-category-management>
+      </div>
+      -->
+
+    </div>
+  </div>
+</div>
+

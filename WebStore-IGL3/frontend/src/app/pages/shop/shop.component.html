@@ -1,0 +1,70 @@
+<div class="min-h-screen">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+    <div class="text-center mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 sm:mb-4">
+        STUDYZONE <span class="text-purple-300">STORE</span>
+      </h1>
+      <p class="text-gray-200 max-w-2xl mx-auto text-sm sm:text-base">
+        Discover our exclusive collection of StudyZone Store products 
+        From clothing to accessories, find everything you need
+      </p>
+    </div>
+
+    <!-- Conteneur principal -->
+    <div class="flex flex-row gap-4 lg:gap-6 items-start">
+      
+      <!-- Sidebar des filtres -->
+      <div class="w-64 min-w-[240px] flex-shrink-0">
+        <div class="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
+          <app-filter-sidebar (filtersChange)="onFiltersChanged($event)"></app-filter-sidebar>
+        </div>
+      </div>
+
+      <!-- Zone principale des produits -->
+      <div class="flex-1 min-w-0">
+        
+        <!-- Loading state -->
+        <div *ngIf="loading" class="text-center py-12">
+          <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-white transition ease-in-out duration-150">
+            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Chargement des produits...
+          </div>
+        </div>
+
+        <!-- Error message -->
+        <div *ngIf="errorMessage" class="text-center py-8">
+          <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-400">
+            {{ errorMessage }}
+          </div>
+        </div>
+
+        <!-- Grille des produits -->
+        <div *ngIf="products.length > 0" 
+             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 justify-items-center">
+          <app-product-card 
+            *ngFor="let product of products" 
+            [product]="product"
+            class="w-full max-w-[320px]"
+            (viewDetails)="onViewDetails($event)"
+            (addToCart)="onAddToCart($event)">
+          </app-product-card>
+        </div>
+
+        <!-- État vide -->
+        <div *ngIf="products.length === 0 && !loading && !errorMessage" class="text-center py-12">
+          <div class="text-white">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8v4H7V5a1 1 0 011-1h8a1 1 0 011 1z" />
+            </svg>
+            <h3 class="text-lg font-medium text-gray-200 mb-2">Aucun produit trouvé</h3>
+            <p class="text-gray-400">Essayez d'ajuster vos filtres de recherche.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

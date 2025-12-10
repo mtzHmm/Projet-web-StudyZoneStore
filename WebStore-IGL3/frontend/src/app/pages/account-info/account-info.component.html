@@ -1,0 +1,82 @@
+<div class="min-h-screen flex justify-center items-center p-6">
+  <div class="w-[893px] h-[877px] relative bg-[radial-gradient(ellipse_56.46%_87.73%_at_46.20%_46.17%,rgba(0,0,0,0)_0%,rgba(146,53,255,0.10)_100%)] rounded-[20px] shadow-lg outline outline-[0.25px] outline-offset-[-0.25px] outline-neutral-200 backdrop-blur-lg overflow-hidden flex justify-center items-center">
+    
+    <div class="w-[632px] h-[838px] flex flex-col justify-center items-center gap-10">
+      
+      <div class="flex flex-col justify-center items-center gap-6">
+        <div class="w-12 h-12 bg-stone-300 rounded-full"></div>
+        <div class="flex flex-col justify-center items-center gap-0.5">
+          <div class="text-white text-3xl font-medium font-['Poppins']">Create an account</div>
+          <div class="p-0.5 inline-flex justify-start items-start gap-2.5">
+            <span class="text-white text-base font-normal font-['Poppins']">Already have an account?</span>
+            <a routerLink='/sign-in' class="text-violet-700 text-base font-normal font-['Poppins'] underline cursor-pointer ml-1">Log in</a>
+          </div>
+        </div>
+      </div>
+      
+  <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="w-[528px] flex flex-col gap-4">
+  <label for="firstName" class="text-white text-base font-normal font-['Poppins']">First Name</label>
+  <input
+    id="firstName"
+    type="text"
+    formControlName="firstName"
+    placeholder="First Name"
+    class="h-14 rounded-xl outline outline-1 outline-offset-[-1px] outline-stone-500/30 bg-transparent px-4 text-white placeholder-stone-400 w-full"
+  />
+
+  <label for="lastName" class="text-white text-base font-normal font-['Poppins']">Last Name</label>
+  <input
+    id="lastName"
+    type="text"
+    formControlName="lastName"
+    placeholder="Last Name"
+    class="h-14 rounded-xl outline outline-1 outline-offset-[-1px] outline-stone-500/30 bg-transparent px-4 text-white placeholder-stone-400 w-full"
+  />
+
+  <label for="email" class="text-white text-base font-normal font-['Poppins']">Your Email</label>
+  <input
+    id="email"
+    type="email"
+    formControlName="email"
+    placeholder="Your Email"
+    class="h-14 rounded-xl outline outline-1 outline-offset-[-1px] outline-stone-500/30 bg-transparent px-4 text-white placeholder-stone-400 w-full"
+  />
+
+  <label for="password" class="text-white text-base font-normal font-['Poppins']">Password</label>
+  <input
+    id="password"
+    type="password"
+    formControlName="password"
+    placeholder="********"
+    class="h-14 rounded-xl outline outline-1 outline-offset-[-1px] outline-stone-500/30 bg-transparent px-4 text-white placeholder-stone-400 w-full"
+  />
+<div *ngIf="errorMessage !== ''" class="text-red-500 mb-4">
+  {{ errorMessage }}
+</div>
+<div *ngIf="indicationMsg !== ''"  class="flex items-center text-gray-400 text-xs">
+   <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" 
+         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" 
+            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+      </path>
+    </svg>
+  {{ indicationMsg }}
+</div>
+<div *ngIf="successMessage" class="text-green-500 mb-4 text-center">
+  {{ successMessage }}
+</div>
+  <button
+  type="submit"
+  class="w-[528px] h-16 bg-violet-700 hover:bg-violet-600 rounded-[40px] text-white text-xl font-medium font-['Poppins'] transition-colors"
+>
+  Create an account
+</button>
+</form>
+  </div>
+</div>
+
+
+
+
+
+

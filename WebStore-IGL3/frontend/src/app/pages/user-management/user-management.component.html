@@ -1,0 +1,109 @@
+<div class="min-h-screen flex items-center justify-start p-4">
+  <div class="flex gap-12 max-w-20xl w-full pr-8">
+    <app-sidebar></app-sidebar>
+  
+<div class="w-full max-w-20xl ml-12 mt-10 mb-20 p-6 
+            rounded-2xl bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,_rgba(0,0,0,0)_0%,_rgba(146,54,255,0.1)_100%)]
+            shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)]
+            outline outline-1 outline-black backdrop-blur-lg
+            flex flex-col overflow-y-auto scrollbar-transparent">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold mt-10 mb-4 text-violet-400">User management</h2>
+
+    <!-- Barre de recherche -->
+    <div class="flex items-center gap-2">
+      <span class="text-zinc-400">🔎</span>
+      <input [(ngModel)]="searchUser"
+             (ngModelChange)="onSearchChange()"
+             placeholder="Search by name, firstname or email..."
+             class="w-80 p-2 rounded-lg bg-zinc-900 border border-zinc-700 text-white outline-none focus:border-violet-400 transition" />
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
+    {{errorMessage}}
+  </div>
+
+  <!-- Stats Info -->
+  <div *ngIf="totalUsers > 0" class="mb-4 text-sm text-zinc-400">
+    Showing {{users.length}} user(s) out of {{totalUsers}} total
+  </div>
+
+  <!-- Table Container with Infinite Scroll -->
+  <div #tableContainer class="overflow-auto rounded-xl border border-zinc-700 max-h-[600px]">
+    <table class="min-w-full text-left text-white">
+      <thead class="bg-zinc-800 text-zinc-400 font-semibold text-lg sticky top-0 z-10">
+        <tr>
+          <th class="px-6 py-3">ID</th>
+          <th class="px-6 py-3">Prénom</th>
+          <th class="px-6 py-3">Nom</th>
+          <th class="px-6 py-3 w-72">Email</th>
+          <th class="px-6 py-3">Rôle</th>
+          <th class="px-6 py-3 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers" class="border-t border-zinc-700 hover:bg-zinc-800/40 transition">
+          <td class="px-6 py-4 font-mono text-sm">#{{ user.id }}</td>
+          <td class="px-6 py-4 capitalize">{{ user.firstName }}</td>
+          <td class="px-6 py-4 capitalize">{{ user.lastName }}</td>
+          <td class="px-6 py-4 w-72 overflow-x-auto whitespace-nowrap">{{ user.email }}</td>
+          <td class="px-6 py-4">
+            <span [ngClass]="{
+              'bg-blue-600 text-blue-100': user.role.toLowerCase() === 'admin', 
+              'bg-purple-600 text-purple-100': user.role.toLowerCase() === 'client'
+            }" class="px-3 py-1 rounded-full text-xs font-medium uppercase">
+              {{ user.role }}
+            </span>
+          </td>
+          <td class="px-6 py-4 flex justify-center gap-4 text-xl">
+            <button (click)="viewUser(user)" 
+                    class="w-8 h-8 flex items-center justify-center bg-zinc-800 rounded-md hover:bg-violet-400 cursor-pointer transition"
+                    title="Voir l'utilisateur">👤</button>
+            
+            <!-- Role selector -->
+            <select (change)="onRoleChange(user, $event)"
+                    [value]="user.role"
+                    class="bg-zinc-800 text-white text-xs rounded-md px-2 py-1 border border-zinc-600 hover:border-violet-400 transition"
+                    title="Changer le rôle">
+              <option value="ADMIN">Admin</option>
+              <option value="CLIENT">Client</option>
+            </select>
+            
+            <button (click)="deleteUser(user)" 
+                    class="w-8 h-8 flex items-center justify-center bg-zinc-800 rounded-md hover:bg-red-600 cursor-pointer transition"
+                    title="Supprimer l'utilisateur">🗑</button>
+          </td>
+        </tr>
+
+        <!-- Loading indicator -->
+        <tr *ngIf="isLoading">
+          <td colspan="6" class="px-6 py-6 text-center border-t border-zinc-700">
+            <div class="flex justify-center items-center gap-2 text-violet-400">
+              <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-violet-400"></div>
+              <span>Chargement des utilisateurs...</span>
+            </div>
+          </td>
+        </tr>
+
+        <!-- No more data indicator -->
+        <tr *ngIf="!hasMoreData && filteredUsers.length > 0 && !isLoading">
+          <td colspan="6" class="px-6 py-4 text-center text-zinc-400 border-t border-zinc-700">
+            Tous les utilisateurs ont été affichés
+          </td>
+        </tr>
+
+        <!-- No results found -->
+        <tr *ngIf="filteredUsers.length === 0 && !isLoading">
+          <td colspan="6" class="px-6 py-8 text-center text-zinc-400">
+            Aucun utilisateur trouvé
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>

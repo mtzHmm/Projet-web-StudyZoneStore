@@ -1,0 +1,202 @@
+<!-- Checkout Form -->
+<div *ngIf="!isOrderSubmitted" class="min-h-screen bg-transparent">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <!-- Titre de la page -->
+        <div class="mb-8">
+            <h1 class="text-white text-2xl font-bold font-['Poppins']">Checkout</h1>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Section principale - Formulaire -->
+            <div class="flex-1 space-y-6" >
+                <!-- Informations personnelles -->
+                <div class="w-full p-8 bg-zinc-700/10 rounded-[10px] shadow-[0px_20px_100px_0px_rgba(0,0,0,0.25)] outline outline-[0.50px] outline-offset-[-0.50px] outline-white backdrop-blur-[6px]">
+                    <h2 class="text-white text-xl text-center font-medium font-['Poppins'] mb-6">Add Your Full Name/Phone Number</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-white text-lg font-light font-['Poppins'] mb-3">First Name</label>
+                            <input 
+                                type="text" 
+                                [(ngModel)]="checkoutForm.firstName"
+                                [disabled]="isUserAuthenticated"
+                                class="w-full h-12 px-4 rounded-lg border border-stone-300 bg-transparent text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                                placeholder="Enter first name"
+                            />
+                            <span *ngIf="isUserAuthenticated" class="text-xs text-purple-300 mt-1">Auto-filled from your profile</span>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-white text-lg font-light font-['Poppins'] mb-3">Last Name</label>
+                            <input 
+                                type="text" 
+                                [(ngModel)]="checkoutForm.lastName"
+                                [disabled]="isUserAuthenticated"
+                                class="w-full h-12 px-4 rounded-lg border border-stone-300 bg-transparent text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                                placeholder="Enter last name"
+                            />
+                            <span *ngIf="isUserAuthenticated" class="text-xs text-purple-300 mt-1">Auto-filled from your profile</span>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-white text-lg font-light font-['Poppins'] mb-3">Phone Number</label>
+                            <div class="relative">
+                                <!-- Country Code Selector - Inside Input -->
+                                <select 
+                                    [(ngModel)]="checkoutForm.countryCode"
+                                    (change)="onCountryCodeChange()"
+                                    class="absolute left-0 top-0 h-12 pl-3 pr-1 bg-transparent text-white focus:outline-none cursor-pointer z-10 appearance-none"
+                                    style="width: 85px;"
+                                >
+                                    <option *ngFor="let country of countryCodes" [value]="country.code" class="bg-zinc-800">
+                                        {{ country.flag }} {{ country.code }}
+                                    </option>
+                                </select>
+                                
+                                <!-- Dropdown Arrow Icon -->
+                                <svg class="absolute left-[70px] top-1/2 transform -translate-y-1/2 w-3 h-3 text-white pointer-events-none z-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                                
+                                <!-- Phone Number Input -->
+                                <input 
+                                    type="tel" 
+                                    [(ngModel)]="checkoutForm.phoneNumber"
+                                    (input)="formatPhoneNumber($event)"
+                                    [maxlength]="getMaxPhoneLength()"
+                                    class="w-full h-12 pl-24 pr-4 rounded-lg border border-stone-300 bg-transparent text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                                    placeholder="Enter phone number"
+                                />
+                                
+                                <!-- Separator Line -->
+                                <div class="absolute left-[85px] top-1/2 transform -translate-y-1/2 h-6 w-px bg-stone-300"></div>
+                            </div>
+                            <span class="text-xs text-gray-400 mt-1 block">Format: {{ getSelectedCountryFormat() }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Méthode de paiement et livraison -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Méthode de paiement -->
+                    <div class="p-6 bg-zinc-700/10 rounded-[10px] shadow-[0px_20px_100px_0px_rgba(0,0,0,0.25)] outline outline-[0.50px] outline-offset-[-0.50px] outline-white backdrop-blur-[6px]">
+                        <h3 class="text-white text-xl font-medium font-['Poppins'] mb-6">Payment Method</h3>
+                        
+                        <div class="space-y-4">
+                            <label class="flex items-center p-4 bg-zinc-700/10 rounded-[10px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)] border border-purple-500 cursor-pointer">
+                                <input 
+                                    type="radio" 
+                                    name="paymentMethod" 
+                                    value="cash"
+                                    [(ngModel)]="checkoutForm.paymentMethod"
+                                    class="w-4 h-4 text-purple-500 bg-transparent border-purple-500 focus:ring-purple-500"
+                                />
+                                <span class="ml-3 text-white text-lg font-light font-['Poppins']">Cash (at pickup)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Méthode de livraison -->
+                    <div class="p-6 bg-zinc-700/10 rounded-[10px] shadow-[0px_20px_100px_0px_rgba(0,0,0,0.25)] outline outline-[0.50px] outline-offset-[-0.50px] outline-white backdrop-blur-[6px]">
+                        <h3 class="text-white text-xl font-medium font-['Poppins'] mb-6">Delivery Method</h3>
+                        
+                        <div class="space-y-4">
+                            <label class="flex items-center p-4 bg-zinc-700/10 rounded-[10px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)] border border-purple-500 cursor-pointer">
+                                <input 
+                                    type="radio" 
+                                    name="deliveryMethod" 
+                                    value="pickup"
+                                    [(ngModel)]="checkoutForm.deliveryMethod"
+                                    class="w-4 h-4 text-purple-500 bg-transparent border-purple-500 focus:ring-purple-500"
+                                />
+                                <span class="ml-3 text-white text-lg font-light font-['Poppins']">Local Pickup (FST Campus)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section résumé de commande -->
+            <div class="w-full lg:w-96">
+                <div class="p-8 bg-zinc-700/10 rounded-[10px] shadow-[0px_20px_100px_0px_rgba(0,0,0,0.25)] outline outline-[0.50px] outline-white backdrop-blur-[6px] flex flex-col gap-8 sticky top-8">
+                    <h2 class="text-gray-200 text-2xl font-bold font-['Poppins'] leading-loose">Order Summary</h2>
+                    
+                    <!-- Items in cart -->
+                    <div *ngIf="loading" class="flex justify-center items-center">
+                        <span class="text-white text-base font-normal font-['Poppins']">Loading cart...</span>
+                    </div>
+                    
+                    <div *ngIf="!loading && cartItems.length === 0" class="text-center">
+                        <span class="text-white text-base font-normal font-['Poppins']">Your cart is empty</span>
+                    </div>
+                    
+                    <div *ngIf="!loading && cartItems.length > 0" class="flex flex-col gap-4">
+                        <!-- Cart items -->
+                        <div *ngFor="let item of cartItems" class="flex justify-between items-start py-2">
+                            <div class="flex-1">
+                                <span class="text-white text-sm font-normal font-['Poppins'] block">{{ item.name }}</span>
+                                <span class="text-gray-300 text-xs">Qty: {{ item.quantity }}</span>
+                            </div>
+                            <span class="text-white text-sm font-normal font-['Poppins']">{{ (item.price * item.quantity) | number:'1.2-2' }} DT</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full h-px bg-zinc-300"></div>
+                    
+                    <div class="flex flex-col gap-6">
+                        <div class="flex justify-between items-start">
+                            <span class="text-white text-base font-normal font-['Poppins'] leading-normal">TOTAL</span>
+                            <span class="text-white text-base font-semibold font-['Poppins'] leading-tight tracking-tight">{{ orderSummary.total | number:'1.2-2' }} DT</span>
+                        </div>
+                        
+                        <button 
+                            (click)="proceedToCheckout()"
+                            class="w-full h-12 px-10 py-4 bg-violet-700 hover:bg-violet-600 rounded flex justify-center items-center gap-4 transition-colors"
+                        >
+                            <span class="text-white text-base font-semibold font-['Poppins'] leading-tight tracking-tight">Proceed to Checkout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Confirmation Page -->
+<div *ngIf="isOrderSubmitted" class="fixed top-16 left-0 w-full h-[calc(100vh-4rem)] bg-transparent z-10 overflow-hidden">
+    <!-- Main content - centered and compact to fit in viewport -->
+    <div class="flex flex-col items-center justify-center h-full px-4">
+        <!-- Success message -->
+        <div class="text-center mb-2 max-w-4xl mx-auto">
+            <!-- Combined title line -->
+            <div class="text-white text-xl lg:text-3xl font-bold font-['Poppins'] uppercase leading-tight mb-2 whitespace-nowrap">
+                Order Submitted Successfully
+            </div>
+            <div class="text-white text-sm lg:text-lg font-normal font-['Poppins'] uppercase leading-normal mb-2">
+                We thank you for ordering from our shop
+            </div>
+            
+            <!-- Order details -->
+            <div class="flex justify-center items-center text-purple-300 text-sm lg:text-base font-normal font-['Poppins'] uppercase leading-normal mb-2">
+                <div>ORDER ID : {{ orderId }}</div>
+            </div>
+        </div>
+        
+        <!-- Package illustration - smaller and centered -->
+        <div class="mb-2">
+            <img src="assets/logo/3624626654dff9a871e9a556aed120283a8c69b4.png" 
+                 alt="Order confirmation illustration"
+                 class="w-32 h-auto mx-auto">
+        </div>
+        
+        <!-- Back to shop button - smaller and perfectly centered -->
+        <div class="flex justify-center">
+            <button 
+                (click)="backToShop()"
+                class="px-6 py-2 bg-violet-700 hover:bg-violet-600 text-white text-sm font-medium font-['Poppins'] rounded-md transition-all duration-300"
+            >
+                Back to Shop
+            </button>
+        </div>
+    </div>
+</div>

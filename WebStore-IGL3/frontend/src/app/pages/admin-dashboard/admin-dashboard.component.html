@@ -1,0 +1,379 @@
+<div class="min-h-screen flex items-center justify-start p-4">
+  <div class="flex gap-12 max-w-20xl w-full pr-8">
+    <app-sidebar></app-sidebar>
+  
+<div class="w-full max-w-20xl ml-12 mt-10 mb-20 p-6 
+            rounded-2xl bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,_rgba(0,0,0,0)_0%,_rgba(146,54,255,0.1)_100%)]
+            shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)]
+            outline outline-1 outline-black backdrop-blur-lg
+            flex flex-col overflow-y-auto scrollbar-transparent space-y-3">
+      <!-- Latest Orders Section -->
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-2xl font-bold text-violet-400">Latest Orders</h2>
+          <div class="flex items-center gap-2">
+            <!-- Auto-refresh indicator -->
+            <div *ngIf="!usingMockData" class="px-2 py-1 bg-green-500/20 border border-green-500 rounded text-xs">
+              <span class="text-green-400">🔄 Auto-refresh</span>
+            </div>
+            <!-- Mock Data Indicator -->
+            <div *ngIf="usingMockData" class="px-2 py-1 bg-orange-500/20 border border-orange-500 rounded text-xs">
+              <span class="text-orange-400">📊 Demo</span>
+            </div>
+            <!-- Manual Refresh Button -->
+            <button (click)="refreshData()" 
+                    class="px-3 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded transition-colors flex items-center gap-1 text-xs">
+              <span>🔄</span>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div *ngIf="loading" class="text-center py-4">
+          <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-violet-400"></div>
+          <p class="text-white mt-1 text-sm">Loading orders...</p>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error && !loading && !usingMockData" class="bg-red-500/20 border border-red-500 rounded-xl p-3 mb-2">
+          <p class="text-red-400 text-sm">{{ error }}</p>
+          <button (click)="loadLatestOrders()" class="mt-1 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs transition-colors">
+            Retry
+          </button>
+        </div>
+
+        <!-- Orders List -->
+        <div class="orders-table-container space-y-2 max-h-[50vh] overflow-y-auto" *ngIf="!loading && !error">
+          <div *ngIf="latestOrders.length === 0" class="text-center py-4 text-gray-400 text-sm">
+            No orders found
+          </div>
+
+          <!-- Column Headers -->
+          <div *ngIf="latestOrders.length > 0" class="orders-row">
+            <div class="flex items-center px-4 py-2 text-gray-400 text-xs font-medium border-b border-white/10 mb-2">
+              <!-- User Info Header -->
+              <div class="flex-1 min-w-0">
+                Customer & Date
+              </div>
+              
+              <!-- Price Header -->
+              <div class="w-24 flex-shrink-0 text-center">
+                Total
+              </div>
+              
+              <!-- Products Count Header -->
+              <div class="w-16 flex-shrink-0 text-center">
+                Items
+              </div>
+              
+              <!-- Status Header -->
+              <div class="w-24 flex-shrink-0 text-center">
+                Status
+              </div>
+              
+              <!-- Order ID Header -->
+              <div class="w-20 flex-shrink-0 text-right">
+                ID
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Order Rows -->
+          <div class="orders-row">
+            <div *ngFor="let order of latestOrders" 
+                 class="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20 hover:bg-white/15 transition-all duration-200 mb-2">
+              <div class="flex items-center">
+                <!-- User Info - Use available space -->
+                <div class="flex items-center gap-2 flex-1 min-w-0 pr-2">
+                  <img [src]="getAvatarUrl(order.user)" 
+                       class="w-8 h-8 rounded-full border-2 border-violet-400 flex-shrink-0" 
+                       [alt]="order.user.firstName + ' ' + order.user.lastName"
+                       onerror="this.src='https://ui-avatars.com/api/?name=User&background=8b5cf6&color=fff&size=32'">
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-white font-medium text-xs truncate">{{ order.user.firstName }} {{ order.user.lastName }}</span>
+                    <span class="text-gray-400 text-xs truncate">{{ formatDate(order.orderDate) }}</span>
+                  </div>
+                </div>
+                
+                <!-- Price - Compact -->
+                <div class="w-24 flex-shrink-0 text-center px-1">
+                  <div class="text-yellow-400 font-semibold text-xs">{{ calculateOrderTotal(order) | number:'1.2-2' }} DT</div>
+                </div>
+                
+                <!-- Products Count - Very compact -->
+                <div class="w-16 flex-shrink-0 text-center px-1">
+                  <div class="text-gray-300 text-xs">{{ getTotalQuantity(order) }}</div>
+                </div>
+                
+                <!-- Status - Compact -->
+                <div class="w-24 flex-shrink-0 text-center px-1">
+                  <span [class]="getStatusBadgeColor(order.status)" class="font-medium px-1 py-0.5 rounded text-xs">
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                </div>
+                
+                <!-- Order ID - Very compact -->
+                <div class="w-20 flex-shrink-0 text-right px-1">
+                  <span class="text-green-400 text-xs font-medium">#{{ order.id }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fallback Message when using mock data -->
+        <div *ngIf="usingMockData && !loading" class="text-center mt-2 p-2 bg-blue-500/10 border border-blue-500/30 rounded text-xs">
+          <p class="text-blue-400">
+            🔌 Backend non accessible. Affichage des données de démonstration.
+          </p>
+        </div>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <!-- Total Revenue -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-200 relative">
+          <div *ngIf="usingMockData" class="absolute top-2 right-2">
+            <span class="text-orange-400 text-xs">📊</span>
+          </div>
+          <div class="flex justify-between items-start mb-2">
+            <div class="text-xs text-gray-400">Total Revenue</div>
+            <div class="w-6 h-6 bg-violet-600 rounded flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-white">
+                <path d="M12 2C13.1046 2 14 2.89543 14 4V6H18C19.1046 6 20 6.89543 20 8V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V8C4 6.89543 4.89543 6 6 6H10V4C10 2.89543 10.8954 2 12 2Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 11V13M12 16H12.01" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-white mb-2">{{ formatNumber(stats.totalRevenue) }} DT</div>
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+              <span class="text-xs text-green-400">Revenue</span>
+            </div>
+            <button class="text-xs text-violet-400 hover:text-violet-300">View</button>
+          </div>
+        </div>
+
+        <!-- Total Orders -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-200 relative">
+          <div *ngIf="usingMockData" class="absolute top-2 right-2">
+            <span class="text-orange-400 text-xs">📊</span>
+          </div>
+          <div class="flex justify-between items-start mb-2">
+            <div class="text-xs text-gray-400">Total Orders</div>
+            <div class="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-white">
+                <path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.7 15.3C4.3 15.7 4.6 16.4 5.1 16.4H17M17 13V17A2 2 0 0115 19H9A2 2 0 017 17V13" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-white mb-2">{{ formatNumber(stats.totalOrders) }}</div>
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              <span class="text-xs text-blue-400">Orders</span>
+            </div>
+            <button class="text-xs text-violet-400 hover:text-violet-300">View</button>
+          </div>
+        </div>
+
+        <!-- Pending orders -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-200 relative">
+          <div *ngIf="usingMockData" class="absolute top-2 right-2">
+            <span class="text-orange-400 text-xs">📊</span>
+          </div>
+          <div class="flex justify-between items-start mb-2">
+            <div class="text-xs text-gray-400">Pending Orders</div>
+            <div class="w-6 h-6 bg-yellow-600 rounded flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-white">
+                <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-white mb-2">{{ formatNumber(stats.pendingOrders) }}</div>
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+              <span class="text-xs text-yellow-400">Pending</span>
+            </div>
+            <button class="text-xs text-violet-400 hover:text-violet-300">View</button>
+          </div>
+        </div>
+
+        <!-- Orders delivered -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-200 relative">
+          <div *ngIf="usingMockData" class="absolute top-2 right-2">
+            <span class="text-orange-400 text-xs">📊</span>
+          </div>
+          <div class="flex justify-between items-start mb-2">
+            <div class="text-xs text-gray-400">Orders Delivered</div>
+            <div class="w-6 h-6 bg-green-600 rounded flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-white">
+                <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-2xl font-bold text-white mb-2">{{ formatNumber(stats.deliveredOrders) }}</div>
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+              <span class="text-xs text-green-400">Delivered</span>
+            </div>
+            <button class="text-xs text-violet-400 hover:text-violet-300">View</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <!-- Claims Over Years Chart -->
+        <div class="lg:col-span-2 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-200">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-base font-semibold text-white">Orders Over the Year {{ chartData.ordersOverTime.currentYear }}</h3>
+            <div class="flex gap-3 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-pink-400 rounded-full"></span>
+                <span class="text-pink-400">Confirmed</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-blue-400 rounded-full"></span>
+                <span class="text-blue-400">Delivered</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Dynamic Chart with SVG -->
+          <div class="relative w-full h-64 bg-transparent">
+            <svg class="w-full h-full" viewBox="0 0 800 300">
+              <!-- Grid lines -->
+              <defs>
+                <pattern id="grid" width="69.1" height="30" patternUnits="userSpaceOnUse">
+                  <path d="M 69.1 0 L 0 0 0 30" fill="none" stroke="#374151" stroke-width="0.5" opacity="0.2"/>
+                </pattern>
+              </defs>
+              <rect x="20" y="40" width="760" height="210" fill="url(#grid)" />
+              
+              <!-- Lignes verticales d'alignement pour chaque mois -->
+              <g transform="translate(20,40)">
+                <line x1="0" y1="0" x2="0" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="69" y1="0" x2="69" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="138" y1="0" x2="138" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="207" y1="0" x2="207" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="276" y1="0" x2="276" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="345" y1="0" x2="345" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="414" y1="0" x2="414" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="483" y1="0" x2="483" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="552" y1="0" x2="552" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="621" y1="0" x2="621" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="690" y1="0" x2="690" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+                <line x1="760" y1="0" x2="760" y2="210" stroke="#4B5563" stroke-width="0.5" opacity="0.3"/>
+              </g>
+              
+              <!-- Y-axis line -->
+              <line x1="20" y1="40" x2="20" y2="250" stroke="#4B5563" stroke-width="2"/>
+              
+              <!-- X-axis line -->
+              <line x1="20" y1="250" x2="780" y2="250" stroke="#4B5563" stroke-width="2"/>
+              
+              <!-- Y-axis labels (positioned at far left) -->
+              <text x="15" y="45" fill="#9CA3AF" font-size="12" text-anchor="end">{{ chartData.ordersOverTime.maxValue }}</text>
+              <text x="15" y="95" fill="#9CA3AF" font-size="12" text-anchor="end">{{ (chartData.ordersOverTime.maxValue * 0.75) | number:'1.0-0' }}</text>
+              <text x="15" y="145" fill="#9CA3AF" font-size="12" text-anchor="end">{{ (chartData.ordersOverTime.maxValue * 0.5) | number:'1.0-0' }}</text>
+              <text x="15" y="195" fill="#9CA3AF" font-size="12" text-anchor="end">{{ (chartData.ordersOverTime.maxValue * 0.25) | number:'1.0-0' }}</text>
+              <text x="15" y="255" fill="#9CA3AF" font-size="12" text-anchor="end">0</text>
+              
+              <!-- Dynamic Chart lines (positioned from far left) -->
+              <g transform="translate(20,40)">
+                <path [attr.d]="generateChartPath(chartData.ordersOverTime.confirmedOrders, 760, 210, chartData.ordersOverTime.maxValue)" 
+                      fill="none" stroke="#fb7185" stroke-width="3"/>
+                <path [attr.d]="generateChartPath(chartData.ordersOverTime.deliveredOrders, 760, 210, chartData.ordersOverTime.maxValue)" 
+                      fill="none" stroke="#60a5fa" stroke-width="3"/>
+                
+                <!-- Data points for current month -->
+                <circle [attr.cx]="getCurrentMonthX(760)" 
+                        [attr.cy]="getCurrentMonthY(210)" 
+                        r="6" fill="#8b5cf6" stroke="#fff" stroke-width="2"/>
+                <text [attr.x]="getCurrentMonthX(760)" 
+                      [attr.y]="getCurrentMonthTextY(210)" 
+                      text-anchor="middle" fill="white" font-size="10" font-weight="bold">
+                  +{{ getCurrentMonthValue() }}
+                </text>
+              </g>
+              
+              <!-- X-axis month labels (parfaitement alignés avec les points de données) -->
+              <g transform="translate(20,265)">
+                <text x="0" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Jan</text>
+                <text x="69" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Feb</text>
+                <text x="138" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Mar</text>
+                <text x="207" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Apr</text>
+                <text x="276" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">May</text>
+                <text x="345" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Jun</text>
+                <text x="414" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Jul</text>
+                <text x="483" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Aug</text>
+                <text x="552" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Sep</text>
+                <text x="621" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Oct</text>
+                <text x="690" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Nov</text>
+                <text x="760" y="15" fill="#9CA3AF" font-size="11" text-anchor="middle">Dec</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Dynamic StudyZone Store Members -->
+        <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300 relative">
+          <div *ngIf="usingMockData" class="absolute top-2 right-2">
+            <span class="text-orange-400 text-xs">📊</span>
+          </div>
+          
+          <div class="mb-6">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <p class="text-sm text-gray-400">Active Members</p>
+                <p class="text-4xl font-bold text-white">{{ formatPercentage(chartData.userStats.userGrowthPercentage) }}%</p>
+              </div>
+              <div class="flex items-center -space-x-2">
+                <img src="https://randomuser.me/api/portraits/women/44.jpg" class="w-8 h-8 rounded-full border-2 border-violet-400" />
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" class="w-8 h-8 rounded-full border-2 border-violet-400" />
+                <img src="https://randomuser.me/api/portraits/women/55.jpg" class="w-8 h-8 rounded-full border-2 border-violet-400" />
+                <div class="w-8 h-8 rounded-full bg-violet-600 text-sm font-bold flex items-center justify-center border-2 border-violet-400 text-white">+{{ formatNumber(chartData.userStats.totalUsers - chartData.userStats.activeUsers) }}</div>
+              </div>
+            </div>
+            
+            <div class="mb-6">
+              <p class="text-sm text-gray-400">total clients</p>
+              <p class="text-2xl font-semibold text-white">{{ formatNumber(chartData.userStats.totalUsers) }}</p>
+            </div>
+          </div>
+          
+          <!-- Dynamic Small trend chart -->
+          <div class="relative w-full h-20 bg-transparent">
+            <svg class="w-full h-full" viewBox="0 0 200 80">
+              <!-- Generate dynamic path for user growth trend -->
+              <path [attr.d]="generateChartPath(chartData.userStats.monthlyGrowth, 160, 60, 60)" 
+                    fill="none" stroke="#fbbf24" stroke-width="3"/>
+              
+              <!-- Dynamic dots for key data points -->
+              <circle [attr.cx]="20" [attr.cy]="getUserGrowthStartY()" r="2" fill="#fbbf24"/>
+              <circle [attr.cx]="100" [attr.cy]="getUserGrowthMidY()" r="2" fill="#fbbf24"/>
+              <circle [attr.cx]="180" [attr.cy]="getUserGrowthEndY()" r="2" fill="#fbbf24"/>
+            </svg>
+          </div>
+          
+          <!-- Growth indicator -->
+          <div class="mt-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-500"></span>
+              <span class="text-xs text-green-400">
+                +{{ getUserGrowthPercentage() }}% this year
+              </span>
+            </div>
+            <span class="text-xs text-gray-400">{{ chartData.ordersOverTime.currentYear }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

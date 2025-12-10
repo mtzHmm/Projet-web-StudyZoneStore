@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagination Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar styles */
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .custom-scrollbar {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-zinc-900 text-white min-h-screen p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6 text-center">Démonstration de la sélection de catégories avec pagination</h1>
+        
+        <div class="bg-white/10 border border-white/20 rounded-xl p-6">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <label class="text-sm text-white/80 font-semibold">Catégories disponibles:</label>
+                    <div class="text-xs text-white/60" id="pagination-info">
+                        1 - 5 sur 12
+                    </div>
+                </div>
+                
+                <!-- Container scrollable avec pagination -->
+                <div class="bg-white/10 border border-white/20 rounded-xl overflow-hidden">
+                    <!-- Liste des catégories -->
+                    <div class="max-h-48 overflow-y-auto custom-scrollbar" id="categories-list">
+                        <!-- Les catégories seront ajoutées par JavaScript -->
+                    </div>
+                    
+                    <!-- Contrôles de pagination -->
+                    <div class="border-t border-white/20 p-3 bg-white/5" id="pagination-controls">
+                        <div class="flex items-center justify-between">
+                            <!-- Bouton Précédent -->
+                            <button id="prev-btn"
+                                    class="px-3 py-1 text-sm bg-white/10 hover:bg-white/20 disabled:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white transition-all duration-300">
+                                ← Précédent
+                            </button>
+                            
+                            <!-- Numéros de page -->
+                            <div class="flex gap-1" id="page-numbers">
+                                <!-- Les numéros de page seront ajoutés par JavaScript -->
+                            </div>
+                            
+                            <!-- Bouton Suivant -->
+                            <button id="next-btn"
+                                    class="px-3 py-1 text-sm bg-white/10 hover:bg-white/20 disabled:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white transition-all duration-300">
+                                Suivant →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-sm text-white/60">
+                    ✅ Fonctionnalités implémentées :
+                    <ul class="list-disc ml-6 mt-2 space-y-1">
+                        <li>Pagination avec 5 éléments par page</li>
+                        <li>Zone scrollable pour les catégories</li>
+                        <li>Boutons de navigation (Précédent/Suivant)</li>
+                        <li>Numérotation des pages</li>
+                        <li>Compteur d'éléments</li>
+                        <li>Scrollbar personnalisée</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Données de démonstration
+        const categories = [
+            { id: 1, name: 'T-shirt' },
+            { id: 2, name: 'Hoodie' },
+            { id: 3, name: 'Accessories' },
+            { id: 4, name: 'Chleka' },
+            { id: 5, name: 'Sweatshirt' },
+            { id: 6, name: 'Jacket' },
+            { id: 7, name: 'Polo' },
+            { id: 8, name: 'Tank Top' },
+            { id: 9, name: 'Jeans' },
+            { id: 10, name: 'Shorts' },
+            { id: 11, name: 'Sneakers' },
+            { id: 12, name: 'Caps' }
+        ];
+
+        let currentPage = 1;
+        const itemsPerPage = 5;
+        let selectedCategoryId = null;
+
+        function updatePaginatedCategories() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedCategories = categories.slice(startIndex, endIndex);
+            
+            const categoriesList = document.getElementById('categories-list');
+            categoriesList.innerHTML = '';
+            
+            paginatedCategories.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'flex items-center justify-between p-3 hover:bg-white/10 transition-all duration-300 group border-b border-white/10 last:border-b-0';
+                categoryDiv.innerHTML = `
+                    <label class="flex items-center gap-3 cursor-pointer flex-1">
+                        <input type="radio" 
+                               name="categorySelection" 
+                               value="${category.id}"
+                               ${selectedCategoryId === category.id ? 'checked' : ''}
+                               onchange="selectCategory(${category.id})"
+                               class="w-4 h-4 text-blue-600 bg-white/10 border-white/30 focus:ring-blue-500 focus:ring-2">
+                        <span class="text-white font-medium">${category.name}</span>
+                        <span class="text-white/60 text-sm">(ID: ${category.id})</span>
+                    </label>
+                    
+                    <button type="button"
+                            onclick="deleteCategory(${category.id})"
+                            class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-1 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-md"
+                            title="Supprimer cette catégorie">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                `;
+                categoriesList.appendChild(categoryDiv);
+            });
+        }
+
+        function updatePaginationInfo() {
+            const totalCategories = categories.length;
+            const startIndex = ((currentPage - 1) * itemsPerPage) + 1;
+            const endIndex = Math.min(currentPage * itemsPerPage, totalCategories);
+            
+            document.getElementById('pagination-info').textContent = `${startIndex} - ${endIndex} sur ${totalCategories}`;
+        }
+
+        function updatePaginationControls() {
+            const totalPages = Math.ceil(categories.length / itemsPerPage);
+            
+            // Boutons précédent/suivant
+            document.getElementById('prev-btn').disabled = currentPage === 1;
+            document.getElementById('next-btn').disabled = currentPage === totalPages;
+            
+            // Numéros de page
+            const pageNumbers = document.getElementById('page-numbers');
+            pageNumbers.innerHTML = '';
+            
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.type = 'button';
+                pageButton.onclick = () => goToPage(i);
+                pageButton.className = `w-8 h-8 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    currentPage === i ? 'bg-blue-600 text-white' : 'bg-white/10 hover:bg-white/20 text-white/80'
+                }`;
+                pageButton.textContent = i;
+                pageNumbers.appendChild(pageButton);
+            }
+        }
+
+        function goToPage(page) {
+            const totalPages = Math.ceil(categories.length / itemsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                updatePaginatedCategories();
+                updatePaginationInfo();
+                updatePaginationControls();
+            }
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePaginatedCategories();
+                updatePaginationInfo();
+                updatePaginationControls();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(categories.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePaginatedCategories();
+                updatePaginationInfo();
+                updatePaginationControls();
+            }
+        }
+
+        function selectCategory(categoryId) {
+            selectedCategoryId = categoryId;
+            console.log('Catégorie sélectionnée:', categoryId);
+        }
+
+        function deleteCategory(categoryId) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer cette catégorie ?`)) {
+                console.log('Suppression de la catégorie:', categoryId);
+                // Ici on aurait la logique de suppression
+            }
+        }
+
+        // Event listeners
+        document.getElementById('prev-btn').onclick = previousPage;
+        document.getElementById('next-btn').onclick = nextPage;
+
+        // Initialisation
+        updatePaginatedCategories();
+        updatePaginationInfo();
+        updatePaginationControls();
+    </script>
+</body>
+</html>

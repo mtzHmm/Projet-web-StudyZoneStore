@@ -1,0 +1,144 @@
+/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Global gradient background for all pages */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  background: linear-gradient(180deg, #0a0612 0%, #1a0f2e 30%, #2d1b4e 70%, #1f1835 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Force Poppins font for all elements */
+* {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Ensure transparent backgrounds for main containers */
+.min-h-screen, .container {
+  background: transparent !important;
+}
+
+/* Unified button style for the project */
+.btn-primary {
+  padding: 0.75rem 1.5rem;
+  background-color: rgb(124 58 237);
+  color: white;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: rgb(109 40 217);
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  border: 1px solid rgb(124 58 237);
+  color: rgb(124 58 237);
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: rgb(124 58 237);
+  color: white;
+}
+
+/* Ensure main content area has transparent background to show gradient */
+app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Force transparent backgrounds on all main containers */
+.min-h-screen {
+  background: transparent !important;
+}
+
+/* Ensure no page-specific backgrounds override the global gradient */
+div[class*="bg-gradient"], div[class*="bg-zinc"], div[class*="bg-black"] {
+  background: transparent !important;
+}
+
+/* Force the main content area to be transparent */
+main {
+  background: transparent !important;
+}
+
+/* Override any contact page specific backgrounds */
+.contact-container, [class*="contact"] {
+  background: transparent !important;
+}
+
+/* Override any white backgrounds that might cover the gradient */
+.bg-gray-50 {
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+}
+
+/* Enhance card backgrounds with glass effect */
+.bg-white {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Text contrast improvements for the dark gradient */
+.text-gray-900 {
+  color: white !important;
+}
+
+.text-gray-600 {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.text-gray-500 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Custom scrollbar styles */
+.scrollbar-transparent::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-thumb {
+  background: rgba(146, 54, 255, 0.3);
+  border-radius: 8px;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-thumb:hover {
+  background: rgba(146, 54, 255, 0.6);
+}
+
+.scrollbar-transparent {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(146, 54, 255, 0.3) rgba(0, 0, 0, 0.1);
+}

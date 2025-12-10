@@ -1,0 +1,20 @@
+/* Styles globaux ou dans styles.css */
+.scrollbar-transparent::-webkit-scrollbar {
+  width: 8px; /* largeur de la scrollbar verticale */
+  height: 8px; /* hauteur de la scrollbar horizontale */
+}
+
+.scrollbar-transparent::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1); /* fond translucide de la piste */
+  border-radius: 8px;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-thumb {
+  background: rgba(146, 54, 255, 0.3); /* couleur translucide du "thumb" */
+  border-radius: 8px;
+}
+
+.scrollbar-transparent {
+  scrollbar-width: thin; /* pour Firefox */
+  scrollbar-color: rgba(146, 54, 255, 0.3) rgba(0, 0, 0, 0.1); /* Firefox */
+}

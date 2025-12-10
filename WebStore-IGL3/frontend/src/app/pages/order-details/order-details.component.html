@@ -1,0 +1,164 @@
+<div class="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-start justify-start pt-16 pl-16">
+  <div class="max-w-6xl w-full px-8 py-6 relative">
+    
+    <!-- Cart Totals responsive -->
+    <div class="w-80 h-80 -right-40 top-16 absolute bg-[radial-gradient(ellipse_56.46%_87.73%_at_46.20%_46.17%,_rgba(0,_0,_0,_0)_0%,_rgba(146.11,_53.55,_255,_0.10)_100%)] rounded-[20px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)] outline outline-[0.25px] outline-offset-[-0.25px] outline-neutral-200 overflow-hidden flex flex-col items-center justify-center gap-4 p-6">
+        <div class="text-center text-white text-xl font-normal font-['Poppins']">Commande #{{ orderId }}</div>
+        
+        <!-- Status Badge -->
+        <div *ngIf="currentOrder" class="px-3 py-1 rounded-full text-sm font-medium" 
+             [ngClass]="{
+               'bg-yellow-500/20 text-yellow-400': currentOrder.status === 'pending',
+               'bg-blue-500/20 text-blue-400': currentOrder.status === 'confirmed', 
+               'bg-green-500/20 text-green-400': currentOrder.status === 'delivered',
+               'bg-red-500/20 text-red-400': currentOrder.status === 'cancelled'
+             }">
+          {{ getStatusLabel(currentOrder.status) }}
+        </div>
+        
+        <div class="text-center text-white text-2xl font-normal font-['Poppins']">Total</div>
+        <div class="text-center text-white text-3xl font-bold font-['Poppins']">{{ totalAmount.toFixed(2) }} DT</div>
+        
+        <!-- Boutons Actions selon le statut -->
+        <div class="flex gap-4 mt-4">
+          <!-- Bouton Supprimer (visible seulement si commande PENDING) -->
+          <button *ngIf="currentOrder?.status === 'pending'" 
+                  (click)="deleteOrder()" 
+                  class="w-12 h-12 bg-red-600 rounded-lg text-white text-2xl hover:bg-red-500 transition-colors flex items-center justify-center">
+              ✕
+          </button>
+          
+          <!-- Bouton Confirmer (visible seulement si commande PENDING) -->
+          <button *ngIf="currentOrder?.status === 'pending'" 
+                  (click)="acceptOrder()" 
+                  class="w-12 h-12 bg-green-600 rounded-lg text-white text-2xl hover:bg-green-500 transition-colors flex items-center justify-center">
+              ✓
+          </button>
+          
+          <!-- Bouton Livrer (visible seulement si commande CONFIRMED) -->
+          <button *ngIf="currentOrder?.status === 'confirmed'" 
+                  (click)="deliverOrder()" 
+                  class="w-12 h-12 bg-blue-600 rounded-lg text-white text-2xl hover:bg-blue-500 transition-colors flex items-center justify-center">
+              🚚
+          </button>
+          
+          <!-- Icône Livrée (visible si commande DELIVERED - désactivé) -->
+          <div *ngIf="currentOrder?.status === 'delivered'" 
+               class="w-12 h-12 bg-gray-600 rounded-lg text-gray-300 text-2xl flex items-center justify-center cursor-not-allowed">
+              📦
+          </div>
+          
+          <!-- Icône Annulée (visible si commande CANCELLED - désactivé) -->
+          <div *ngIf="currentOrder?.status === 'cancelled'" 
+               class="w-12 h-12 bg-gray-600 rounded-lg text-gray-300 text-2xl flex items-center justify-center cursor-not-allowed">
+              ❌
+          </div>
+        </div>
+    </div>
+    
+    <!-- Container principal responsive pour le contenu -->
+        
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="flex justify-center items-center py-8 max-w-4xl">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400"></div>
+            <span class="ml-2 text-white">Chargement des détails de la commande...</span>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="errorMessage && !isLoading" class="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-6 text-red-200 max-w-4xl">
+            ⚠️ {{ errorMessage }}
+        </div>
+        
+        <!-- Contenu principal (visible seulement si pas de chargement et pas d'erreur) -->
+        <div *ngIf="!isLoading && !errorMessage">
+            <!-- En-têtes des colonnes -->
+            <div class="flex justify-start items-center mb-6 max-w-4xl">
+            <div class="w-1/4 text-center text-white text-lg font-normal font-['Poppins']">Product name</div>
+            <div class="w-1/4 text-center text-white text-lg font-normal font-['Poppins']">Unit Price</div>
+            <div class="w-1/4 text-center text-white text-lg font-normal font-['Poppins']">Quantity</div>
+            <div class="w-1/4 text-center text-white text-lg font-normal font-['Poppins']">Total Price</div>
+            <div class="w-16"></div> <!-- Espace pour le bouton supprimer -->
+        </div>
+
+
+        <!-- Liste des produits de la commande -->
+        <div class="flex flex-col gap-0 max-w-4xl">
+            <div *ngIf="orderItems.length === 0" class="text-white text-center py-8">
+                <p class="text-xl mb-2">Aucun article trouvé pour cette commande</p>
+                <p class="text-sm text-gray-400">Commande ID: {{ orderId }}</p>
+            </div>
+            
+            <div *ngFor="let item of orderItems; trackBy: trackByItemId; let last = last" class="w-full">
+                <!-- Ligne de produit -->
+                <div class="w-full flex justify-start items-center py-3">
+                    <!-- Image du produit + Nom -->
+                    <div class="w-1/4 flex justify-start items-center gap-3">
+                        <div class="w-14 h-14 relative bg-neutral-900/50 rounded-[20px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)] outline outline-[0.25px] outline-offset-[-0.25px] outline-neutral-200 backdrop-blur-lg overflow-hidden flex-shrink-0">
+                            <img class="w-full h-full object-cover" [src]="item.product.imageUrl || 'assets/default-product.png'" [alt]="item.product.name" />
+                        </div>
+                        <div class="text-white text-lg font-normal font-['Poppins'] truncate">{{ item.product.name }}</div>
+                    </div>
+                    
+                    <!-- Prix unitaire -->
+                    <div class="w-1/4 text-center text-white text-lg font-normal font-['Poppins']">{{ item.product.price }} DT</div>
+                    
+                    <!-- Quantité -->
+                    <div class="w-1/4 text-center text-white text-lg font-normal font-['Poppins']">{{ item.quantity }}</div>
+                    
+                    <!-- Prix total -->
+                    <div class="w-1/4 text-center text-white text-lg font-normal font-['Poppins']">{{ item.product.price * item.quantity }} DT</div>
+
+                </div>
+                
+                <!-- Ligne de séparation après chaque produit -->
+                <div class="w-full h-0 border-b border-white/30 mb-2"></div>
+            </div>
+        </div>
+        
+        <!-- Section d'informations client -->
+        <div class="mt-8 max-w-4xl bg-[radial-gradient(ellipse_50%_50%_at_50%_50%,_rgba(0,0,0,0)_0%,_rgba(146,54,255,0.1)_100%)] rounded-[20px] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.25)] shadow-[0px_4px_250px_0px_rgba(146,54,255,0.25)] outline outline-[0.25px] outline-offset-[-0.25px] outline-neutral-200 p-6">
+            <h3 class="text-white text-lg font-semibold mb-4">Informations de la commande</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+                <!-- Name -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-white text-sm font-medium">Client</label>
+                    <input type="text" [value]="customerInfo.name" readonly class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none">
+                </div>
+                
+                <!-- Order Date -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-white text-sm font-medium">Date de commande</label>
+                    <input type="text" [value]="currentOrder ? (currentOrder.orderDate | date:'dd/MM/yyyy à HH:mm') : 'N/A'" readonly class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none">
+                </div>
+                
+                <!-- Payment Method -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-white text-sm font-medium">Mode de paiement</label>
+                    <input type="text" [value]="customerInfo.paymentMethod" readonly class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none">
+                </div>
+                
+                <!-- Delivery Method -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-white text-sm font-medium">Livraison</label>
+                    <input type="text" [value]="customerInfo.deliveryMethod" readonly class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none">
+                </div>
+            </div>
+            
+            <!-- Address -->
+            <div class="mt-4">
+                <div class="flex flex-col gap-2">
+                    <label class="text-white text-sm font-medium">Adresse</label>
+                    <input type="text" [value]="customerInfo.address" readonly class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none">
+                </div>
+            </div>
+        </div>
+        
+            <!-- Bouton retour au dashboard -->
+            <div class="flex justify-center mt-6 max-w-4xl">
+                <button (click)="goBackToOrder()" class="w-48 h-14 bg-violet-700 rounded-md overflow-hidden hover:bg-violet-600 transition-colors flex items-center justify-center">
+                    <div class="text-center text-white text-xl font-medium font-['Poppins']">Back to Orders</div>
+                </button>
+            </div>
+        </div> <!-- Fin du conteneur principal -->
+    </div>
+</div>

@@ -1,0 +1,119 @@
+/* Animation pour les éléments de la grille */
+.product-grid-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.product-grid-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+}
+
+/* Styles pour le loader */
+.loading-spinner {
+  border: 3px solid rgba(168, 85, 247, 0.1);
+  border-radius: 50%;
+  border-top: 3px solid #a855f7;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Effet de survol pour les boutons de pagination */
+.pagination-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+}
+
+/* Styles pour les badges */
+.exclusive-badge {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Transition fluide pour le changement de vue */
+.view-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Styles responsifs pour la grille */
+@media (max-width: 640px) {
+  .product-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Effet de glow pour les éléments interactifs */
+.glow-effect:hover {
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+/* Animation d'apparition pour les produits */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Styles pour le mode liste */
+.list-mode .product-card {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: 0.5rem;
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.list-mode .product-image {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+
+.list-mode .product-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
