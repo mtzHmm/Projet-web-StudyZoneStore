@@ -54,55 +54,54 @@ export class UserService {
   getUsers(page: number = 0, size: number = 10, sortBy: string = 'id', sortDir: string = 'asc', search?: string): Observable<UserPage> {
     console.log('🔄 Mock getUsers - Page:', page, 'Size:', size, 'Search:', search);
     
-    return of({
-      content: [],
-      totalElements: 0,
-      totalPages: 0,
-      size: 10,
-      number: 0,
-      first: true,
-      last: true
-    }).pipe(
-      delay(300),
-      tap(() => {
-        let filtered = [...MOCK_USERS];
+    let filtered = [...MOCK_USERS];
 
-        // Apply search filter
-        if (search && search.trim()) {
-          const searchLower = search.toLowerCase();
-          filtered = filtered.filter(user =>
-            user.firstName.toLowerCase().includes(searchLower) ||
-            user.lastName.toLowerCase().includes(searchLower) ||
-            user.email.toLowerCase().includes(searchLower) ||
-            user.role.toLowerCase().includes(searchLower)
-          );
-        }
+    // Apply search filter
+    if (search && search.trim()) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(user =>
+        user.firstName.toLowerCase().includes(searchLower) ||
+        user.lastName.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower) ||
+        user.role.toLowerCase().includes(searchLower)
+      );
+    }
 
-        // Apply sorting
-        filtered.sort((a, b) => {
-          const aVal = (a as any)[sortBy];
-          const bVal = (b as any)[sortBy];
-          const direction = sortDir === 'desc' ? -1 : 1;
+    // Apply sorting
+    filtered.sort((a, b) => {
+      const aVal = (a as any)[sortBy];
+      const bVal = (b as any)[sortBy];
+      const direction = sortDir === 'desc' ? -1 : 1;
 
-          if (typeof aVal === 'string') {
-            return aVal.localeCompare(bVal) * direction;
-          }
-          return (aVal - bVal) * direction;
-        });
+      if (typeof aVal === 'string') {
+        return aVal.localeCompare(bVal) * direction;
+      }
+      return (aVal - bVal) * direction;
+    });
 
-        // Apply pagination
-        const totalElements = filtered.length;
-        const totalPages = Math.ceil(totalElements / size);
-        const start = page * size;
-        const end = start + size;
-        const paginatedUsers = filtered.slice(start, end);
+    // Apply pagination
+    const totalElements = filtered.length;
+    const totalPages = Math.ceil(totalElements / size);
+    const start = page * size;
+    const end = start + size;
+    const paginatedUsers = filtered.slice(start, end);
 
-        // Update subject
-        this.usersSubject.next(paginatedUsers);
+    console.log('✅ Mock users retrieved:', paginatedUsers.length, 'out of', totalElements);
 
-        console.log('✅ Mock users retrieved:', paginatedUsers.length, 'sur', totalElements);
-      })
-    );
+    // Update subject
+    this.usersSubject.next(paginatedUsers);
+
+    const result: UserPage = {
+      content: paginatedUsers,
+      totalElements: totalElements,
+      totalPages: totalPages,
+      size: size,
+      number: page,
+      first: page === 0,
+      last: page >= totalPages - 1 || totalPages === 0
+    };
+
+    return of(result).pipe(delay(300));
   }
 
   /**

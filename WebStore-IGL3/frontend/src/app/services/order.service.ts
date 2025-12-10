@@ -30,50 +30,50 @@ export class OrderService {
   ): Observable<OrderResponse> {
     console.log('🔍 Mock getOrders:', { page, size, sortBy, sortDirection, status, userId });
 
-    return of({
-      orders: [],
-      page: 0,
-      size: 10,
-      totalElements: 0,
-      totalPages: 0
-    }).pipe(
-      delay(300),
-      tap(() => {
-        // Filter orders
-        let filtered = [...this.orders];
+    // Filter orders
+    let filtered = [...this.orders];
 
-        if (status) {
-          filtered = filtered.filter(o => o.status === status);
-        }
-        if (userId) {
-          filtered = filtered.filter(o => o.userId === userId);
-        }
+    if (status) {
+      filtered = filtered.filter(o => o.status === status);
+    }
+    if (userId) {
+      filtered = filtered.filter(o => o.user.id === userId);
+    }
 
-        // Sort
-        filtered.sort((a, b) => {
-          const aVal = (a as any)[sortBy];
-          const bVal = (b as any)[sortBy];
-          const direction = sortDirection.toLowerCase() === 'desc' ? -1 : 1;
+    // Sort
+    filtered.sort((a, b) => {
+      const aVal = (a as any)[sortBy];
+      const bVal = (b as any)[sortBy];
+      const direction = sortDirection.toLowerCase() === 'desc' ? -1 : 1;
 
-          if (aVal < bVal) return -1 * direction;
-          if (aVal > bVal) return 1 * direction;
-          return 0;
-        });
+      if (aVal < bVal) return -1 * direction;
+      if (aVal > bVal) return 1 * direction;
+      return 0;
+    });
 
-        // Paginate
-        const totalElements = filtered.length;
-        const totalPages = Math.ceil(totalElements / size);
-        const start = page * size;
-        const end = start + size;
-        const paginatedOrders = filtered.slice(start, end);
+    // Paginate
+    const totalElements = filtered.length;
+    const totalPages = Math.ceil(totalElements / size);
+    const start = page * size;
+    const end = start + size;
+    const paginatedOrders = filtered.slice(start, end);
 
-        console.log('✅ Orders retrieved:', {
-          count: paginatedOrders.length,
-          total: totalElements,
-          pages: totalPages
-        });
-      })
-    );
+    console.log('✅ Orders retrieved:', {
+      count: paginatedOrders.length,
+      total: totalElements,
+      pages: totalPages,
+      userId: userId
+    });
+
+    const result: OrderResponse = {
+      orders: paginatedOrders,
+      page: page,
+      size: size,
+      totalElements: totalElements,
+      totalPages: totalPages
+    };
+
+    return of(result).pipe(delay(300));
   }
 
   // 🔎 Récupérer une commande par ID
