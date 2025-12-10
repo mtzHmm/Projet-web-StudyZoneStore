@@ -8,10 +8,10 @@
         <!-- Status Badge -->
         <div *ngIf="currentOrder" class="px-3 py-1 rounded-full text-sm font-medium" 
              [ngClass]="{
-               'bg-yellow-500/20 text-yellow-400': currentOrder.status === 'pending',
-               'bg-blue-500/20 text-blue-400': currentOrder.status === 'confirmed', 
-               'bg-green-500/20 text-green-400': currentOrder.status === 'delivered',
-               'bg-red-500/20 text-red-400': currentOrder.status === 'cancelled'
+               'bg-purple-600/30 text-purple-300': currentOrder.status === 'pending',
+               'bg-violet-600/30 text-violet-400': currentOrder.status === 'confirmed', 
+               'bg-cyan-600/30 text-cyan-400': currentOrder.status === 'delivered',
+               'bg-red-600/30 text-red-400': currentOrder.status === 'cancelled'
              }">
           {{ getStatusLabel(currentOrder.status) }}
         </div>
@@ -31,26 +31,26 @@
           <!-- Bouton Confirmer (visible seulement si commande PENDING) -->
           <button *ngIf="currentOrder?.status === 'pending'" 
                   (click)="acceptOrder()" 
-                  class="w-12 h-12 bg-green-600 rounded-lg text-white text-2xl hover:bg-green-500 transition-colors flex items-center justify-center">
+                  class="w-12 h-12 bg-violet-600 rounded-lg text-white text-2xl hover:bg-violet-500 transition-colors flex items-center justify-center">
               ✓
           </button>
           
           <!-- Bouton Livrer (visible seulement si commande CONFIRMED) -->
           <button *ngIf="currentOrder?.status === 'confirmed'" 
                   (click)="deliverOrder()" 
-                  class="w-12 h-12 bg-blue-600 rounded-lg text-white text-2xl hover:bg-blue-500 transition-colors flex items-center justify-center">
+                  class="w-12 h-12 bg-cyan-600 rounded-lg text-white text-2xl hover:bg-cyan-500 transition-colors flex items-center justify-center">
               🚚
           </button>
           
           <!-- Icône Livrée (visible si commande DELIVERED - désactivé) -->
           <div *ngIf="currentOrder?.status === 'delivered'" 
-               class="w-12 h-12 bg-gray-600 rounded-lg text-gray-300 text-2xl flex items-center justify-center cursor-not-allowed">
+               class="w-12 h-12 bg-zinc-700 rounded-lg text-zinc-400 text-2xl flex items-center justify-center cursor-not-allowed">
               📦
           </div>
           
           <!-- Icône Annulée (visible si commande CANCELLED - désactivé) -->
           <div *ngIf="currentOrder?.status === 'cancelled'" 
-               class="w-12 h-12 bg-gray-600 rounded-lg text-gray-300 text-2xl flex items-center justify-center cursor-not-allowed">
+               class="w-12 h-12 bg-zinc-700 rounded-lg text-zinc-400 text-2xl flex items-center justify-center cursor-not-allowed">
               ❌
           </div>
         </div>
