@@ -15,6 +15,9 @@ export const MOCK_CATEGORIES: Category[] = [
   { id: 3, name: 'Pants', description: 'Quality pants' },
   { id: 4, name: 'Jackets', description: 'Stylish jackets' },
   { id: 5, name: 'Hats', description: 'Hats and caps' },
+  { id: 6, name: 'Accessories', description: 'Bags, bottles, and other accessories' },
+  { id: 7, name: 'Stationery', description: 'Notebooks, pens, and office supplies' },
+  { id: 8, name: 'Tech', description: 'Technology accessories and gadgets' },
 ];
 
 // ==================== PRODUCTS ====================

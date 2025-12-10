@@ -178,11 +178,11 @@ export class Stats implements OnInit, OnDestroy {
     this.loadRealStats();
   }
 
-  // Fetch real data from backend
+  // Fetch real data from mock data services
   private fetchRealData() {
-    console.log('🔄 Starting real data fetch...');
+    console.log('🔄 Starting real data fetch from mock services...');
     return forkJoin({
-      products: this.productService.getProducts().pipe(
+      products: this.productService.getProducts(0, 1000).pipe( // Get ALL products (up to 1000)
         tap(result => console.log('📦 Products fetched:', result.content?.length || 0, 'items')),
         catchError(err => {
           console.error('❌ Error fetching products:', err);
@@ -201,30 +201,11 @@ export class Stats implements OnInit, OnDestroy {
           console.error('❌ Error fetching orders:', err);
           return of({ orders: [], totalElements: 0 });
         })
-      ),
-      // Get delivered orders specifically for sales calculation
-      deliveredOrders: this.orderService.getOrders(0, 1000, 'orderDate', 'desc', OrderStatus.DELIVERED).pipe(
-        tap(result => {
-          console.log('📋 Delivered orders fetched:', result.orders?.length || 0, 'orders');
-          if (result.orders) {
-            console.log('📋 Delivered order details:', result.orders.map(o => ({ 
-              id: o.id, 
-              status: o.status, 
-              date: o.orderDate,
-              total: o.totalAmount
-            })));
-          }
-        }),
-        catchError(err => {
-          console.error('❌ Error fetching delivered orders:', err);
-          return of({ orders: [], totalElements: 0 });
-        })
       )
     }).pipe(
       tap(fullData => console.log('✅ All data fetched successfully:', {
         products: fullData.products.content?.length || 0,
-        allOrders: fullData.allOrders.orders?.length || 0,
-        deliveredOrders: fullData.deliveredOrders.orders?.length || 0
+        allOrders: fullData.allOrders.orders?.length || 0
       })),
       catchError(error => {
         console.error('❌ Error in fetchRealData:', error);
@@ -233,22 +214,39 @@ export class Stats implements OnInit, OnDestroy {
     );
   }
 
-  // Update stats with real backend data
+  // Update stats with real mock data
   private updateStatsWithRealData(data: any): void {
     const products = data.products.content || [];
     const allOrders = data.allOrders.orders || data.allOrders.content || data.allOrders || [];
     
+    console.log('📊 Calculating stats from:', { products: products.length, orders: allOrders.length });
+    
+    // Product statistics
     const totalProducts = products.length;
     const inStockProducts = products.filter((p: any) => p.stock > 0).length;
     const outOfStockProducts = totalProducts - inStockProducts;
     
-    // Calculate REAL revenue from delivered orders
-    const actualDeliveredOrders = allOrders.filter((o: any) => 
-      o.status === 'delivered' || o.status === 'livrée' || o.status === 'DELIVERED'
+    // Calculate total inventory value
+    const totalInventoryValue = products.reduce((sum: number, product: any) => {
+      return sum + (product.price * product.stock);
+    }, 0);
+    
+    // Calculate average product price
+    const averageProductPrice = totalProducts > 0 
+      ? products.reduce((sum: number, p: any) => sum + p.price, 0) / totalProducts 
+      : 0;
+    
+    // Order statistics
+    const deliveredOrders = allOrders.filter((o: any) => 
+      o.status === OrderStatus.DELIVERED || o.status === 'DELIVERED' || o.status === 'delivered'
     );
     
-    const totalRevenue = actualDeliveredOrders.reduce((sum: number, order: any) => {
-      // Calculate total from orderItems since totalAmount is not provided
+    const pendingOrders = allOrders.filter((o: any) => 
+      o.status === OrderStatus.PENDING || o.status === 'PENDING' || o.status === 'pending'
+    );
+    
+    // Calculate REAL revenue from delivered orders
+    const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => {
       const orderItems = order.orderItems || [];
       const orderTotal = orderItems.reduce((itemSum: number, item: any) => {
         const itemPrice = item.product?.price || item.price || 0;
@@ -258,18 +256,36 @@ export class Stats implements OnInit, OnDestroy {
       return sum + orderTotal;
     }, 0);
     
-    // Calculate order statistics
-    const pendingOrders = allOrders.filter((o: any) => 
-      o.status === 'pending' || o.status === 'en attente' || o.status === 'PENDING'
-    ).length;
+    // Calculate unique categories
+    const uniqueCategories = [...new Set(products.map((p: any) => p.category?.name).filter(Boolean))];
+    
     const totalOrders = allOrders.length;
     
-    // Update stats cards with real data
+    console.log('💰 Calculated stats:', {
+      totalProducts,
+      inStockProducts,
+      outOfStockProducts,
+      totalRevenue,
+      averageProductPrice,
+      deliveredOrders: deliveredOrders.length,
+      pendingOrders: pendingOrders.length,
+      categories: uniqueCategories.length
+    });
+    
+    // Update stats cards with real calculated data
     this.statsCards = [
+      {
+        title: 'Total Products',
+        value: totalProducts.toString(),
+        percentage: this.calculateGrowth(totalProducts, 15), // Compare to expected baseline
+        isPositive: totalProducts >= 15,
+        icon: '🎯',
+        viewReport: 'View All'
+      },
       {
         title: 'Products in Stock',
         value: inStockProducts.toString(),
-        percentage: this.calculateGrowth(inStockProducts, totalProducts * 0.8),
+        percentage: this.calculateGrowth(inStockProducts, totalProducts * 0.9), // 90% should be in stock
         isPositive: inStockProducts > totalProducts * 0.8,
         icon: '📦',
         viewReport: 'View Products'
@@ -277,58 +293,50 @@ export class Stats implements OnInit, OnDestroy {
       {
         title: 'Out of Stock',
         value: outOfStockProducts.toString(),
-        percentage: this.calculateGrowth(outOfStockProducts, totalProducts * 0.2, true),
-        isPositive: outOfStockProducts < totalProducts * 0.2,
-        icon: '📊',
+        percentage: outOfStockProducts === 0 ? '0%' : this.calculateGrowth(outOfStockProducts, 1, true),
+        isPositive: outOfStockProducts === 0,
+        icon: '⚠️',
         viewReport: 'View Report'
-      },
-      {
-        title: 'Total Products',
-        value: totalProducts.toString(),
-        percentage: '+5%', // Placeholder
-        isPositive: true,
-        icon: '🎯',
-        viewReport: 'View All'
       },
       {
         title: 'Total Revenue',
         value: this.formatCurrency(totalRevenue),
-        percentage: '+12%', // Should show 102 DT (92 + 10)
-        isPositive: true,
+        percentage: this.calculateGrowth(totalRevenue, 100), // Compare to 100 DT baseline
+        isPositive: totalRevenue > 0,
         icon: '💰',
         viewReport: 'View Revenue'
       },
       {
-        title: 'Avg Product Value',
-        value: this.formatCurrency(totalProducts > 0 ? totalRevenue / totalProducts : 0),
-        percentage: '+8%', // Placeholder
-        isPositive: true,
+        title: 'Avg Product Price',
+        value: this.formatCurrency(averageProductPrice),
+        percentage: this.calculateGrowth(averageProductPrice, 50), // Compare to 50 DT baseline
+        isPositive: averageProductPrice >= 30,
         icon: '📈',
         viewReport: 'View Details'
       },
       {
         title: 'Orders Delivered',
-        value: actualDeliveredOrders.length.toString(),
-        percentage: this.calculateGrowth(actualDeliveredOrders.length, totalOrders * 0.6),
-        isPositive: actualDeliveredOrders.length > 0,
+        value: deliveredOrders.length.toString(),
+        percentage: this.calculateGrowth(deliveredOrders.length, Math.max(1, totalOrders * 0.5)),
+        isPositive: deliveredOrders.length > 0,
         icon: '✅',
         viewReport: 'View Delivered'
       },
       {
-        title: 'Product Categories',
-        value: [...new Set(products.map((p: any) => p.category?.name).filter(Boolean))].length.toString(),
-        percentage: '+3%',
-        isPositive: true,
-        icon: '📋',
-        viewReport: 'View Categories'
-      },
-      {
         title: 'Pending Orders',
-        value: pendingOrders.toString(),
-        percentage: this.calculateGrowth(pendingOrders, totalOrders * 0.3),
-        isPositive: pendingOrders < totalOrders * 0.5, // Less pending is better
+        value: pendingOrders.length.toString(),
+        percentage: pendingOrders.length === 0 ? '0%' : this.calculateGrowth(pendingOrders.length, Math.max(1, totalOrders * 0.3)),
+        isPositive: pendingOrders.length < totalOrders * 0.5, // Less pending is better
         icon: '📋',
         viewReport: 'View Pending'
+      },
+      {
+        title: 'Product Categories',
+        value: uniqueCategories.length.toString(),
+        percentage: this.calculateGrowth(uniqueCategories.length, 4), // Compare to 4 categories baseline
+        isPositive: uniqueCategories.length >= 4,
+        icon: '📂',
+        viewReport: 'View Categories'
       }
     ];
 
@@ -336,15 +344,25 @@ export class Stats implements OnInit, OnDestroy {
     this.updateChartsWithRealData(products, allOrders);
   }
 
-  // Load mock data as fallback
+  // Load mock data as fallback (should not be needed since services return mock data)
   private loadMockData(): void {
+    console.log('⚠️ Loading fallback mock data - this should not happen if services work correctly');
+    
     // Initialize empty sales data
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     this.chartData = months.map(month => ({ month, value: 0 }));
     this.salesMaxValue = 1; // Default minimum value
     
-    // Update with placeholder values but keep the same structure
+    // Update with placeholder values but keep the same structure as real data
     this.statsCards = [
+      {
+        title: 'Total Products',
+        value: '0',
+        percentage: '0%',
+        isPositive: true,
+        icon: '🎯',
+        viewReport: 'View All'
+      },
       {
         title: 'Products in Stock',
         value: '0',
@@ -357,25 +375,9 @@ export class Stats implements OnInit, OnDestroy {
         title: 'Out of Stock',
         value: '0',
         percentage: '0%',
-        isPositive: false,
-        icon: '📊',
+        isPositive: true,
+        icon: '⚠️',
         viewReport: 'View Report'
-      },
-      {
-        title: 'Pending Orders',
-        value: '0',
-        percentage: '0%',
-        isPositive: true,
-        icon: '📋',
-        viewReport: 'View Pending'
-      },
-      {
-        title: 'Orders Delivered',
-        value: '0',
-        percentage: '0%',
-        isPositive: true,
-        icon: '✅',
-        viewReport: 'View Delivered'
       },
       {
         title: 'Total Revenue',
@@ -386,7 +388,7 @@ export class Stats implements OnInit, OnDestroy {
         viewReport: 'View Revenue'
       },
       {
-        title: 'Avg Product Value',
+        title: 'Avg Product Price',
         value: '0 DT',
         percentage: '0%',
         isPositive: true,
@@ -394,20 +396,28 @@ export class Stats implements OnInit, OnDestroy {
         viewReport: 'View Details'
       },
       {
-        title: 'Product Categories',
+        title: 'Orders Delivered',
+        value: '0',
+        percentage: '0%',
+        isPositive: true,
+        icon: '✅',
+        viewReport: 'View Delivered'
+      },
+      {
+        title: 'Pending Orders',
         value: '0',
         percentage: '0%',
         isPositive: true,
         icon: '📋',
-        viewReport: 'View Categories'
+        viewReport: 'View Pending'
       },
       {
-        title: 'Total Products',
+        title: 'Product Categories',
         value: '0',
         percentage: '0%',
         isPositive: true,
-        icon: '🎯',
-        viewReport: 'View All'
+        icon: '📂',
+        viewReport: 'View Categories'
       }
     ];
     this.error = null;
@@ -419,20 +429,20 @@ export class Stats implements OnInit, OnDestroy {
     console.log('📦 Products:', products.length);
     console.log('📋 Orders:', orders.length);
 
-    // Calculate sales per month from delivered orders
+    // Calculate sales revenue per month from delivered orders
     const currentYear = new Date().getFullYear();
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const salesByMonth = new Array(12).fill(0);
 
-    // Filter delivered orders and count by month (sales = delivered orders)
+    // Filter delivered orders and calculate revenue by month
     const deliveredOrders = orders.filter((order: any) => {
-      const status = order.status ? order.status.toLowerCase() : '';
-      return status === 'delivered' || status === 'livrée';
+      const status = order.status;
+      return status === OrderStatus.DELIVERED || status === 'DELIVERED' || status === 'delivered';
     });
 
     console.log('📈 Total orders received:', orders.length);
     console.log('📈 Delivered orders (sales):', deliveredOrders.length);
-    console.log('📈 All order statuses:', orders.map(o => o.status));
+    console.log('📈 All order statuses:', orders.map(o => ({ id: o.id, status: o.status })));
 
     deliveredOrders.forEach((order: any) => {
       const orderDate = new Date(order.orderDate);
@@ -440,30 +450,38 @@ export class Stats implements OnInit, OnDestroy {
       
       if (orderDate.getFullYear() === currentYear) {
         const month = orderDate.getMonth();
-        salesByMonth[month]++;
-        console.log(`💰 ✅ Sale counted in ${months[month]}: Order #${order.id} (${orderDate.toDateString()}) - Total for ${months[month]}: ${salesByMonth[month]}`);
+        
+        // Calculate order revenue from order items
+        const orderRevenue = order.orderItems?.reduce((sum: number, item: any) => {
+          const itemPrice = item.product?.price || item.price || 0;
+          const itemQuantity = item.quantity || 1;
+          return sum + (itemPrice * itemQuantity);
+        }, 0) || 0;
+        
+        salesByMonth[month] += orderRevenue;
+        console.log(`💰 ✅ Revenue added to ${months[month]}: ${orderRevenue} DT from Order #${order.id} - Total for ${months[month]}: ${salesByMonth[month]} DT`);
       } else {
         console.log(`❌ Order #${order.id} not in current year ${currentYear}`);
       }
     });
 
-    // Update chart data with real sales numbers
+    // Update chart data with real sales revenue
     this.chartData = months.map((month, index) => ({
       month,
-      value: salesByMonth[index]
+      value: Math.round(salesByMonth[index] * 100) / 100 // Round to 2 decimal places
     }));
 
     // Calculate max value for chart scaling
     this.salesMaxValue = Math.max(...salesByMonth, 1); // Minimum 1 to avoid division by zero
 
     // Summary logging
-    const totalSales = salesByMonth.reduce((sum, count) => sum + count, 0);
-    console.log('📊 === SALES SUMMARY ===');
-    console.log('📊 Final sales per month:', 
-      months.map((month, index) => `${month}: ${salesByMonth[index]}`).join(', '));
-    console.log('📊 Total sales in year:', totalSales);
+    const totalSalesRevenue = salesByMonth.reduce((sum, revenue) => sum + revenue, 0);
+    console.log('📊 === SALES REVENUE SUMMARY ===');
+    console.log('📊 Final revenue per month (DT):', 
+      months.map((month, index) => `${month}: ${salesByMonth[index].toFixed(2)}`).join(', '));
+    console.log('📊 Total revenue in year:', totalSalesRevenue.toFixed(2), 'DT');
     console.log('📊 Chart data:', this.chartData);
-    console.log('📈 Max sales value for scaling:', this.salesMaxValue);
+    console.log('📈 Max revenue value for scaling:', this.salesMaxValue.toFixed(2), 'DT');
     console.log('📊 === END SUMMARY ===');
 
     // Create pie chart based on product categories

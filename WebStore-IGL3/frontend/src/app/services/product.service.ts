@@ -245,10 +245,22 @@ export class ProductService {
     filters: any
   ): ProductResponse {
     let filtered = [...MOCK_PRODUCTS];
+    
+    console.log('🔍 ProductService filtering - Input filters:', filters);
+    console.log('🔍 Total products before filtering:', filtered.length);
 
     // Apply category filter
     if (filters.categoryId !== undefined) {
-      filtered = filtered.filter(p => p.category?.id === filters.categoryId);
+      console.log('🔍 Applying category filter for categoryId:', filters.categoryId);
+      const beforeFilter = filtered.length;
+      filtered = filtered.filter(p => {
+        const matches = p.category?.id === filters.categoryId;
+        if (matches) {
+          console.log('✅ Product matches category:', { productId: p.id, productName: p.name, categoryId: p.category?.id });
+        }
+        return matches;
+      });
+      console.log('🔍 Products after category filter:', filtered.length, '(was', beforeFilter, ')');
     }
 
     // Apply clothing filter

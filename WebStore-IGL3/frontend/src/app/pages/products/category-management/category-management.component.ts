@@ -165,8 +165,13 @@ export class CategoryManagementComponent implements AfterViewInit, OnDestroy {
       products: [],
       editing: true
     };
-    this.categories.unshift(newCategory); // Add to beginning for immediate visibility
+    
+    // Add to allCategories first
     this.allCategories.unshift(newCategory);
+    
+    // Reset pagination to refresh the display and avoid duplicates
+    this.resetPagination();
+    this.loadMoreCategories();
   }
 
   // Supprimer une catégorie

@@ -551,11 +551,8 @@ export class ProductMod implements OnInit {
       next: (createdCategory: Category) => {
         console.log('✅ Nouvelle catégorie créée:', createdCategory);
         
-        // Ajouter la nouvelle catégorie à la liste
-        this.categories.push(createdCategory);
-        
-        // Mettre à jour la pagination
-        this.updatePagination();
+        // Reload categories from service to ensure consistency and avoid duplicates
+        this.loadCategories();
         
         // Sélectionner automatiquement la nouvelle catégorie
         this.productCategoryId = createdCategory.id;
@@ -585,13 +582,29 @@ export class ProductMod implements OnInit {
   }
 
   private loadProductsForCategory(categoryId: number): void {
-    console.log('🔍 Chargement des produits pour la catégorie:', categoryId);
+    console.log('🔍 Chargement des produits pour la catégorie ID:', categoryId);
+    console.log('🔍 Catégorie à supprimer:', this.categoryToDelete);
     
     // Utiliser le service de produits pour récupérer les produits de cette catégorie
     this.productService.getProducts(0, 1000, 'name', 'asc', categoryId).subscribe({
       next: (response) => {
         this.productsToDelete = response.content || [];
-        console.log('📦 Produits trouvés pour suppression:', this.productsToDelete);
+        console.log('📦 Réponse complète du service:', response);
+        console.log('📦 Produits trouvés pour suppression (count):', this.productsToDelete.length);
+        console.log('📦 Détails des produits trouvés:', this.productsToDelete.map(p => ({ 
+          id: p.id, 
+          name: p.name, 
+          categoryId: p.category?.id, 
+          categoryName: p.category?.name 
+        })));
+        
+        // Vérifier que les produits appartiennent vraiment à cette catégorie
+        const actualMatchingProducts = this.productsToDelete.filter(p => p.category?.id === categoryId);
+        console.log('📦 Produits réellement dans cette catégorie:', actualMatchingProducts.length);
+        
+        // Utiliser seulement les produits qui appartiennent vraiment à cette catégorie
+        this.productsToDelete = actualMatchingProducts;
+        
         this.showDeleteConfirmation = true;
       },
       error: (error) => {
