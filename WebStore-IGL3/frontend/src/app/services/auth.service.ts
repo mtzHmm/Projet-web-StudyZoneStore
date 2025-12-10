@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { TEST_ACCOUNTS, STORAGE_KEYS } from './mock-data';
+import { TEST_ACCOUNTS, LOCAL_STORAGE_KEYS as STORAGE_KEYS } from './mock-data';
 
 export interface SignUpRequest {
   firstName: string;

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of, BehaviorSubject } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { CartItem } from '../models/cart-item.interface';
-import { STORAGE_KEYS } from './mock-data';
+import { LOCAL_STORAGE_KEYS as STORAGE_KEYS } from './mock-data';
 
 interface CartItemLocal extends CartItem {
   productId: number;

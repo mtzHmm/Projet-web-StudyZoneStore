@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { AuthService, User } from './auth.service';
-import { STORAGE_KEYS } from './mock-data';
+import { LOCAL_STORAGE_KEYS as STORAGE_KEYS } from './mock-data';
 
 @Injectable({
   providedIn: 'root'

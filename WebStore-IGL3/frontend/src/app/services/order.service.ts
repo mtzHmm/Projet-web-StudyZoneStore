@@ -3,7 +3,7 @@ import { Observable, of, throwError } from 'rxjs';
 import { delay, tap } from 'rxjs/operators';
 import { Order, OrderResponse, OrderCreateRequest, OrderUpdateRequest, OrderStatus } from '../models/order.interface';
 import { DashboardEventService } from './dashboard-event.service';
-import { generateMockOrders, STORAGE_KEYS } from './mock-data';
+import { generateMockOrders, LOCAL_STORAGE_KEYS as STORAGE_KEYS } from './mock-data';
 
 @Injectable({
   providedIn: 'root'
