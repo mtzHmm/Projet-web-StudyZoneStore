@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { OrderService } from '../../services/order.service';
 import { Order, OrderItem, OrderStatus } from '../../models/order.interface';
 import { NotificationService } from '../../services/notification.service';
+import { MOCK_ORDERS } from '../../services/mock-data';
 
 interface CustomerInfo {
   name: string;
@@ -104,63 +105,10 @@ export class OrderDetails implements OnInit {
   loadTestData(): void {
     console.log('🧪 Chargement des données de test pour commande ID:', this.orderId);
     
-    // Données mock basées sur l'ID de la commande
-    const mockOrders = {
-      1: {
-        id: 1,
-        orderDate: '2024-12-10T10:30:00',
-        status: OrderStatus.PENDING,
-        deliveryMethod: 'Standard',
-        user: { id: 2, firstName: 'Mustapha', lastName: 'Labeydh', email: 'mustapha@example.com' },
-        orderItems: [
-          { id: 1, quantity: 2, product: { id: 1, name: 'T-Shirt StudyZone Store', price: 29.99, imageUrl: '/assets/images/tshirt-1.jpg' } }
-        ]
-      },
-      2: {
-        id: 2,
-        orderDate: '2024-12-09T15:45:00',
-        status: OrderStatus.CONFIRMED,
-        deliveryMethod: 'Express',
-        user: { id: 3, firstName: 'Derrick', lastName: 'Spencer', email: 'derrick@example.com' },
-        orderItems: [
-          { id: 2, quantity: 1, product: { id: 2, name: 'Hoodie StudyZone Store', price: 49.99, imageUrl: '/assets/images/hoodie-1.jpg' } },
-          { id: 3, quantity: 2, product: { id: 3, name: 'StudyZone Sticker Pack', price: 9.99, imageUrl: '/assets/images/stickers.jpg' } }
-        ]
-      },
-      3: {
-        id: 3,
-        orderDate: '2024-12-08T14:20:00',
-        status: OrderStatus.DELIVERED,
-        deliveryMethod: 'Standard',
-        user: { id: 4, firstName: 'Sarah', lastName: 'Johnson', email: 'sarah@example.com' },
-        orderItems: [
-          { id: 4, quantity: 3, product: { id: 4, name: 'StudyZone Mug', price: 12.99, imageUrl: '/assets/images/mug.jpg' } }
-        ]
-      },
-      4: {
-        id: 4,
-        orderDate: '2024-12-07T09:15:00',
-        status: OrderStatus.CANCELLED,
-        deliveryMethod: 'Express',
-        user: { id: 5, firstName: 'Ahmed', lastName: 'Ben Ali', email: 'ahmed@example.com' },
-        orderItems: [
-          { id: 5, quantity: 1, product: { id: 5, name: 'StudyZone Cap', price: 19.99, imageUrl: '/assets/images/cap.jpg' } }
-        ]
-      },
-      5: {
-        id: 5,
-        orderDate: '2024-12-06T16:30:00',
-        status: OrderStatus.PENDING,
-        deliveryMethod: 'Standard',
-        user: { id: 6, firstName: 'Fatima', lastName: 'Zouari', email: 'fatima@example.com' },
-        orderItems: [
-          { id: 6, quantity: 2, product: { id: 1, name: 'T-Shirt StudyZone Store', price: 29.99, imageUrl: '/assets/images/tshirt-1.jpg' } },
-          { id: 7, quantity: 1, product: { id: 6, name: 'StudyZone Bag', price: 24.99, imageUrl: '/assets/images/bag.jpg' } }
-        ]
-      }
-    };
+    // Utiliser les données centralisées
+    const foundOrder = MOCK_ORDERS.find(order => order.id === this.orderId);
     
-    this.currentOrder = mockOrders[this.orderId as keyof typeof mockOrders] || {
+    this.currentOrder = foundOrder || {
       id: this.orderId,
       orderDate: '2024-12-10T12:00:00',
       status: OrderStatus.PENDING,

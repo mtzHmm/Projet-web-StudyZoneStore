@@ -5,6 +5,7 @@ import { OrderService } from '../../services/order.service';
 import { UserService, UserStats } from '../../services/user.service';
 import { DashboardEventService } from '../../services/dashboard-event.service';
 import { Order, OrderStatus } from '../../models/order.interface';
+import { MOCK_PRODUCTS, MOCK_ORDERS, MOCK_USERS } from '../../services/mock-data';
 import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -33,168 +34,43 @@ export class AdminDashboard implements OnInit, OnDestroy {
     totalOrders: 0
   };
 
-  // Chart data for dynamic graphs
+  // Product Statistics
+  productStats = {
+    totalProducts: 0,
+    lowStockProducts: 0,
+    outOfStockProducts: 0,
+    topSellingProducts: [] as any[]
+  };
+
+  // Chart data for dynamic graphs - Initialize with realistic values
   chartData = {
     // Orders over time chart data
     ordersOverTime: {
       months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      confirmedOrders: [15, 23, 18, 31, 28, 35, 42, 38, 45, 39, 41, 48],
-      deliveredOrders: [12, 20, 15, 28, 25, 30, 38, 35, 40, 36, 38, 44],
+      confirmedOrders: [8, 12, 15, 18, 22, 25, 28, 32, 35, 38, 42, 45],
+      deliveredOrders: [6, 10, 12, 15, 18, 21, 24, 28, 31, 34, 38, 40],
       currentYear: new Date().getFullYear(),
       maxValue: 50
     },
-    // User/client statistics
+    // User/client statistics  
     userStats: {
-      totalUsers: 0,
-      activeUsers: 0,
-      userGrowthPercentage: 82, // percentage of growth or activity
-      monthlyGrowth: [20, 25, 30, 28, 35, 40, 38, 42, 45, 48, 50, 52] // monthly user growth trend
+      totalUsers: 156, // More realistic user count for small business
+      activeUsers: 89,  // About 57% active users
+      userGrowthPercentage: 34, // More realistic growth percentage
+      monthlyGrowth: [45, 52, 61, 68, 75, 83, 92, 101, 112, 125, 139, 156] // steady growth
     }
   };
 
-  // Mock data as fallback
-  private mockOrders: Order[] = [
-    {
-      id: 1,
-      orderDate: '2024-01-15T10:30:00',
-      status: OrderStatus.DELIVERED,
-      deliveryMethod: 'Standard',
-      user: {
-        id: 1,
-        firstName: 'Derrick',
-        lastName: 'Spencer',
-        email: 'derrick.spencer@example.com'
-      },
-      orderItems: [
-        {
-          id: 1,
-          quantity: 2,
-          product: {
-            id: 1,
-            name: 'Premium Hoodie',
-            price: 450.50,
-            imageUrl: '/assets/hoodie.svg'
-          }
-        },
-        {
-          id: 2,
-          quantity: 1,
-          product: {
-            id: 2,
-            name: 'Classic T-Shirt',
-            price: 189.76,
-            imageUrl: '/assets/pull.png'
-          }
-        }
-      ]
-    },
-    {
-      id: 2,
-      orderDate: '2024-01-14T14:20:00',
-      status: OrderStatus.PENDING,
-      deliveryMethod: 'Express',
-      user: {
-        id: 2,
-        firstName: 'Sarah',
-        lastName: 'Johnson',
-        email: 'sarah.johnson@example.com'
-      },
-      orderItems: [
-        {
-          id: 3,
-          quantity: 3,
-          product: {
-            id: 3,
-            name: 'Designer Pull',
-            price: 320.00,
-            imageUrl: '/assets/pull.png'
-          }
-        }
-      ]
-    },
-    {
-      id: 3,
-      orderDate: '2024-01-13T09:15:00',
-      status: OrderStatus.CONFIRMED,
-      deliveryMethod: 'Standard',
-      user: {
-        id: 3,
-        firstName: 'Ahmed',
-        lastName: 'Ben Ali',
-        email: 'ahmed.benali@example.com'
-      },
-      orderItems: [
-        {
-          id: 4,
-          quantity: 1,
-          product: {
-            id: 4,
-            name: 'Premium Hoodie',
-            price: 450.50,
-            imageUrl: '/assets/hoodie.svg'
-          }
-        },
-        {
-          id: 5,
-          quantity: 2,
-          product: {
-            id: 5,
-            name: 'Classic T-Shirt',
-            price: 189.76,
-            imageUrl: '/assets/pull.png'
-          }
-        }
-      ]
-    },
-    {
-      id: 4,
-      orderDate: '2024-01-12T16:45:00',
-      status: OrderStatus.DELIVERED,
-      deliveryMethod: 'Express',
-      user: {
-        id: 4,
-        firstName: 'Fatma',
-        lastName: 'Trabelsi',
-        email: 'fatma.trabelsi@example.com'
-      },
-      orderItems: [
-        {
-          id: 6,
-          quantity: 4,
-          product: {
-            id: 6,
-            name: 'Designer Pull',
-            price: 320.00,
-            imageUrl: '/assets/pull.png'
-          }
-        }
-      ]
-    },
-    {
-      id: 5,
-      orderDate: '2024-01-11T11:30:00',
-      status: OrderStatus.CANCELLED,
-      deliveryMethod: 'Standard',
-      user: {
-        id: 5,
-        firstName: 'Mohamed',
-        lastName: 'Gharbi',
-        email: 'mohamed.gharbi@example.com'
-      },
-      orderItems: [
-        {
-          id: 7,
-          quantity: 1,
-          product: {
-            id: 7,
-            name: 'Premium Hoodie',
-            price: 450.50,
-            imageUrl: '/assets/hoodie.svg'
-          }
-        }
-      ]
-    }
-  ];
+  // Use centralized mock data
+  private get mockOrders(): Order[] {
+    return MOCK_ORDERS;
+  }
+  
+  private get mockUsers() {
+    return MOCK_USERS;
+  }
+  
+  // Enhanced mock data will be generated in methods when needed
 
   constructor(
     private orderService: OrderService,
@@ -203,9 +79,42 @@ export class AdminDashboard implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.loadData();
-    this.setupAutoRefresh();
+    console.log('🚀 AdminDashboard initializing with mock data only...');
+    console.log('📊 Initial mock orders count:', this.mockOrders.length);
+    console.log('📈 Initial chart data:', this.chartData);
+    
+    // Use mock data only (no backend)
+    this.initializeWithMockData();
     this.setupEventListeners();
+    
+    console.log('✅ Dashboard initialized with mock data');
+  }
+
+  private initializeWithMockData() {
+    console.log('📊 Initializing with mock data...');
+    this.usingMockData = true;
+    this.loading = false;
+    this.error = null;
+    
+    // Set mock orders
+    this.latestOrders = this.mockOrders
+      .sort((a: any, b: any) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
+      .slice(0, 5);
+    
+    // Calculate mock statistics
+    this.loadMockStatistics();
+    
+    // Calculate product statistics
+    this.productStats = this.calculateProductStats();
+    
+    // Load mock chart data
+    this.loadMockChartData();
+    
+    console.log('✅ Mock data initialized:', {
+      orders: this.latestOrders.length,
+      stats: this.stats,
+      usingMock: this.usingMockData
+    });
   }
 
   ngOnDestroy() {
@@ -218,169 +127,94 @@ export class AdminDashboard implements OnInit, OnDestroy {
   }
 
   private setupEventListeners() {
-    // Écouter les événements de mise à jour des commandes
+    // Listen for dashboard events and refresh mock data
     this.eventSubscription = this.dashboardEventService.orderUpdated$.subscribe(() => {
-      console.log('🔄 Event received: Refreshing dashboard data...');
-      this.loadData();
+      console.log('🔄 Event received: Refreshing mock data...');
+      this.initializeWithMockData();
     });
   }
 
   private setupAutoRefresh() {
-    // Auto-refresh every 30 seconds when not using mock data
+    // Auto-refresh mock data every 30 seconds to simulate dynamic data
     this.refreshSubscription = interval(this.REFRESH_INTERVAL)
-      .pipe(
-        switchMap(() => {
-          if (!this.usingMockData) {
-            console.log('🔄 Auto-refreshing dashboard data...');
-            return this.orderService.getOrders(0, 20, 'orderDate', 'desc');
-          }
-          return [];
-        })
-      )
-      .subscribe({
-        next: (response: any) => {
-          if (response && response.orders) {
-            // Take all orders, sort by date descending, then take only the first 5
-            const orders = response.orders || [];
-            this.latestOrders = orders
-              .sort((a: any, b: any) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
-              .slice(0, 5);
-            
-            this.loadStatistics(); // Refresh statistics as well
-            console.log(`✅ Dashboard auto-refreshed with ${this.latestOrders.length} orders (newest first)`);
-          }
-        },
-        error: (error) => {
-          console.warn('Auto-refresh failed, switching to mock data:', error);
-          if (!this.usingMockData) {
-            this.usingMockData = true;
-            this.latestOrders = this.mockOrders
-              .sort((a: any, b: any) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
-              .slice(0, 5);
-            this.loadMockStatistics();
-          }
-        }
+      .subscribe(() => {
+        console.log('🔄 Auto-refreshing mock data...');
+        // Slightly randomize the mock data to simulate changes
+        this.updateMockDataWithVariation();
       });
+  }
+
+  private updateMockDataWithVariation() {
+    // Slightly modify chart data to simulate real-time changes
+    this.chartData.ordersOverTime.confirmedOrders = this.chartData.ordersOverTime.confirmedOrders.map(val => {
+      const variation = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+      return Math.max(0, val + variation);
+    });
+    
+    this.chartData.ordersOverTime.deliveredOrders = this.chartData.ordersOverTime.deliveredOrders.map(val => {
+      const variation = Math.floor(Math.random() * 3) - 1;
+      return Math.max(0, val + variation);
+    });
+    
+    // Update max value
+    this.chartData.ordersOverTime.maxValue = Math.max(
+      ...this.chartData.ordersOverTime.confirmedOrders,
+      ...this.chartData.ordersOverTime.deliveredOrders
+    ) + 5;
+    
+    console.log('🔄 Mock data updated with variations');
   }
 
   loadData() {
-    this.loadLatestOrders();
-    this.loadStatistics();
-    this.loadChartData();
+    console.log('📊 Refreshing mock data...');
+    this.initializeWithMockData();
   }
 
   loadLatestOrders() {
-    this.loading = true;
-    this.error = null;
-    this.usingMockData = false;
-    
-    // Get the latest orders - requesting more to ensure we get enough, then limit ourselves
-    this.orderService.getOrders(0, 20, 'orderDate', 'desc').subscribe({
-      next: (response) => {
-        // Take all orders, sort by date descending, then take only the first 5
-        const orders = response.orders || [];
-        console.log(`📊 Received ${orders.length} orders from backend`);
-        
-        // Sort by date descending (most recent first) and take only 5
-        this.latestOrders = orders
-          .sort((a: any, b: any) => {
-            const dateA = new Date(a.orderDate).getTime();
-            const dateB = new Date(b.orderDate).getTime();
-            console.log(`🗓️ Comparing Order #${a.id} (${a.orderDate}) vs Order #${b.id} (${b.orderDate})`);
-            return dateB - dateA; // Descending order (newest first)
-          })
-          .slice(0, 5); // Take only the first 5
-        
-        this.loading = false;
-        console.log(`✅ Latest ${this.latestOrders.length} orders loaded and sorted:`, 
-          this.latestOrders.map(o => `#${o.id} (${o.orderDate} - ${o.status})`));
-      },
-      error: (error) => {
-        console.warn('Backend not accessible, using mock data:', error);
-        // Use mock data when backend is not accessible - ensure only 5 orders
-        this.latestOrders = this.mockOrders
-          .sort((a: any, b: any) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime())
-          .slice(0, 5);
-        
-        this.usingMockData = true;
-        this.loading = false;
-        this.error = null; // Don't show error when using mock data
-        console.log(`📊 Using ${this.latestOrders.length} mock orders:`, 
-          this.latestOrders.map(o => `#${o.id} (${o.status})`));
-      }
-    });
+    console.log('📊 Loading orders from mock data only...');
+    this.initializeWithMockData();
   }
 
   loadStatistics() {
-    // Try to load from backend first
-    this.loadBackendStatistics().catch(() => {
-      // If backend fails, use mock statistics
-      this.loadMockStatistics();
-    });
+    // Always use mock statistics
+    this.loadMockStatistics();
   }
 
-  private async loadBackendStatistics() {
-    try {
-      console.log('📊 Loading statistics from backend...');
-      
-      // Load pending orders (PENDING status = not yet validated by admin)
-      const pendingResponse = await this.orderService.getOrders(0, 1000, 'orderDate', 'desc', OrderStatus.PENDING).toPromise();
-      this.stats.pendingOrders = pendingResponse?.totalElements || 0;
 
-      // Load delivered orders (DELIVERED status = validated and delivered by admin)
-      const deliveredResponse = await this.orderService.getOrders(0, 1000, 'orderDate', 'desc', OrderStatus.DELIVERED).toPromise();
-      this.stats.deliveredOrders = deliveredResponse?.totalElements || 0;
-
-      // Load ALL orders to get the correct total count (including all statuses)
-      const allOrdersResponse = await this.orderService.getOrders(0, 1000, 'orderDate', 'desc').toPromise();
-      this.stats.totalOrders = allOrdersResponse?.totalElements || 0;
-      
-      // Calculate total revenue from DELIVERED orders only (same as stats page)
-      // Only count delivered orders as actual revenue
-      this.stats.totalRevenue = allOrdersResponse?.orders
-        .filter(order => {
-          const status = order.status as string;
-          return status === OrderStatus.DELIVERED || 
-                 status === 'delivered' || 
-                 status === 'livrée';
-        })
-        .reduce((total, order) => total + this.calculateOrderTotal(order), 0) || 0;
-
-      // DON'T override latestOrders here - they are already properly sorted and limited by loadLatestOrders()
-      // Only use allOrdersResponse for statistics calculations and chart data
-      const allOrders = allOrdersResponse?.orders || [];
-        
-      console.log('✅ Statistics loaded:', this.stats);
-      console.log('📊 Total orders from API:', allOrdersResponse?.totalElements);
-      console.log('📋 Current latestOrders count:', this.latestOrders.length);
-      console.log('💰 Revenue calculation:', {
-        confirmedOrders: allOrders.filter(o => o.status === OrderStatus.CONFIRMED).length,
-        deliveredOrders: allOrders.filter(o => o.status === OrderStatus.DELIVERED).length,
-        cancelledOrders: allOrders.filter(o => o.status === OrderStatus.CANCELLED).length,
-        totalRevenue: this.stats.totalRevenue
-      });
-    } catch (error) {
-      throw error; // Re-throw to trigger fallback
-    }
-  }
 
   private loadMockStatistics() {
-    console.info('📊 Using mock statistics data');
-    // Calculate statistics from mock data
+    console.info('📊 Calculating statistics from mock data');
+    console.log('📊 Mock orders count:', this.mockOrders.length);
+    
+    // Calculate statistics from mock data (we now have 8 orders)
     this.stats.totalOrders = this.mockOrders.length;
     this.stats.pendingOrders = this.mockOrders.filter(order => 
       order.status === OrderStatus.PENDING).length;
     this.stats.deliveredOrders = this.mockOrders.filter(order => 
       order.status === OrderStatus.DELIVERED).length;
+    
+    // Calculate revenue only from delivered orders
     this.stats.totalRevenue = this.mockOrders
       .filter(order => order.status === OrderStatus.DELIVERED)
-      .reduce((total, order) => total + this.calculateOrderTotal(order), 0);
+      .reduce((total, order) => {
+        const orderTotal = this.calculateOrderTotal(order);
+        console.log(`💰 Delivered Order #${order.id} (${order.user.firstName}) total: ${orderTotal.toFixed(2)} DT`);
+        return total + orderTotal;
+      }, 0);
+      
+    console.log('📊 Final calculated stats from 8 orders:', {
+      total: this.stats.totalOrders,
+      pending: this.stats.pendingOrders, 
+      delivered: this.stats.deliveredOrders,
+      confirmed: this.mockOrders.filter(order => order.status === OrderStatus.CONFIRMED).length,
+      revenue: this.stats.totalRevenue.toFixed(2) + ' DT'
+    });
   }
 
   // Manual refresh function
   refreshData() {
-    console.log('🔄 Manual refresh triggered');
-    this.loadData();
+    console.log('🔄 Manual refresh triggered (mock data)');
+    this.initializeWithMockData();
   }
 
   getStatusBadgeColor(status: OrderStatus): string {
@@ -663,15 +497,25 @@ export class AdminDashboard implements OnInit, OnDestroy {
   }
 
   private loadMockChartData() {
-    console.warn('🔄 Using mock chart data as fallback');
+    console.warn('🔄 Using enhanced mock chart data as fallback');
+    
+    // Use the generated realistic data from initialization
+    const confirmedData = this.chartData.ordersOverTime.confirmedOrders;
+    const deliveredData = this.chartData.ordersOverTime.deliveredOrders;
+    
     this.chartData.ordersOverTime = {
       months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      confirmedOrders: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], // 1 confirmed in September
-      deliveredOrders: [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], // 1 delivered in September  
+      confirmedOrders: confirmedData,
+      deliveredOrders: deliveredData,
       currentYear: new Date().getFullYear(),
-      maxValue: 3 // Lower scale for realistic data
+      maxValue: Math.max(...confirmedData, ...deliveredData) + 5
     };
-    console.log('📊 Mock chart data loaded (realistic small business data)');
+    
+    console.log('📊 Enhanced mock chart data loaded:', {
+      confirmed: confirmedData,
+      delivered: deliveredData,
+      maxValue: this.chartData.ordersOverTime.maxValue
+    });
   }
 
   // Generate SVG path for chart lines
@@ -743,5 +587,114 @@ export class AdminDashboard implements OnInit, OnDestroy {
     const start = this.chartData.userStats.monthlyGrowth[0];
     const end = this.chartData.userStats.monthlyGrowth[11];
     return Math.round(((end - start) / start) * 100);
+  }
+
+  // Enhanced data generation methods
+  private generateMonthlyOrderData() {
+    const data = [];
+    const currentDate = new Date();
+    
+    for (let i = 11; i >= 0; i--) {
+      const month = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      const confirmedOrders = Math.floor(Math.random() * 30) + 15; // 15-45 orders
+      const deliveredOrders = Math.floor(confirmedOrders * 0.8) + Math.floor(Math.random() * 5); // 80-90% delivered
+      
+      data.push({
+        month: month.toLocaleDateString('en', { month: 'short' }),
+        confirmed: confirmedOrders,
+        delivered: deliveredOrders,
+        revenue: (confirmedOrders * (Math.random() * 100 + 50)) // Random revenue per order
+      });
+    }
+    
+    return data;
+  }
+
+  private generateRealisticOrderData(type: 'confirmed' | 'delivered'): number[] {
+    const baseData = [15, 23, 18, 31, 28, 35, 42, 38, 45, 39, 41, 48];
+    
+    if (type === 'delivered') {
+      // Delivered orders are typically 80-90% of confirmed orders
+      return baseData.map(value => Math.floor(value * (0.8 + Math.random() * 0.1)));
+    }
+    
+    // Add some seasonal variation and growth trend
+    return baseData.map((value, index) => {
+      const seasonalMultiplier = 1 + 0.2 * Math.sin((index / 12) * 2 * Math.PI); // Seasonal variation
+      const growthMultiplier = 1 + (index * 0.05); // 5% growth per month
+      const randomVariation = 0.9 + Math.random() * 0.2; // ±10% random variation
+      
+      return Math.round(value * seasonalMultiplier * growthMultiplier * randomVariation);
+    });
+  }
+
+  private generateUserGrowthData(): number[] {
+    // Return the realistic user growth from chartData
+    return this.chartData.userStats.monthlyGrowth;
+  }
+
+  private calculateProductStats() {
+    // Calculate real statistics from MOCK_PRODUCTS
+    const stats = {
+      topSellingProducts: this.getTopSellingProducts(),
+      totalProducts: MOCK_PRODUCTS.length,
+      lowStockProducts: MOCK_PRODUCTS.filter(p => p.stock > 0 && p.stock < 20).length,
+      outOfStockProducts: MOCK_PRODUCTS.filter(p => p.stock === 0).length
+    };
+    
+    return stats;
+  }
+
+  // Enhanced statistics calculation using mock products data
+  getTopSellingProducts() {
+    // Create realistic top selling products based on our orders
+    const topProducts = [
+      { id: 1, name: 'StudyZone White T-Shirt', price: 29.99, salesCount: 40, revenue: 1174.53 },
+      { id: 2, name: 'StudyZone Classic Black T-Shirt', price: 24.99, salesCount: 39, revenue: 1319.58 },
+      { id: 3, name: 'Blue Jeans', price: 149.99, salesCount: 23, revenue: 3439.57 },
+      { id: 4, name: 'Black Hoodie', price: 89.99, salesCount: 20, revenue: 1879.67 },
+      { id: 5, name: 'StudyZone Navy Hoodie', price: 59.99, salesCount: 19, revenue: 1199.80 }
+    ];
+    
+    return topProducts;
+  }
+
+  getLowStockProducts() {
+    return MOCK_PRODUCTS.filter(product => product.stock > 0 && product.stock < 20);
+  }
+
+  getOutOfStockProducts() {
+    return MOCK_PRODUCTS.filter(product => product.stock === 0);
+  }
+
+  // Calculate enhanced metrics
+  calculateConversionRate(): number {
+    const delivered = this.stats.deliveredOrders;
+    const total = this.stats.totalOrders;
+    return total > 0 ? Math.round((delivered / total) * 100) : 0;
+  }
+
+  calculateAverageOrderValue(): number {
+    const revenue = this.stats.totalRevenue;
+    const orders = this.stats.deliveredOrders;
+    return orders > 0 ? Math.round((revenue / orders) * 100) / 100 : 0;
+  }
+
+  // Format currency for display
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('fr-TN', {
+      style: 'currency',
+      currency: 'TND',
+      minimumFractionDigits: 2
+    }).format(amount);
+  }
+
+  // Calculate monthly revenue growth
+  calculateMonthlyGrowth(): number {
+    // Simulate month-over-month growth
+    const currentMonthRevenue = Math.random() * 5000 + 10000; // 10k-15k TND
+    const lastMonthRevenue = Math.random() * 4000 + 8000;     // 8k-12k TND
+    
+    return Math.round(((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100);
   }
 }

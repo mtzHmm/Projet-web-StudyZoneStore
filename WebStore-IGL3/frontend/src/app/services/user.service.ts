@@ -36,12 +36,12 @@ export interface UserStats {
   providedIn: 'root'
 })
 export class UserService {
-  // In-memory storage for users
-  private users: User[] = JSON.parse(JSON.stringify(MOCK_USERS));
-  private nextId: number = Math.max(...this.users.map(u => u.id)) + 1;
+  // Direct reference to centralized user data
+  private get users(): User[] { return MOCK_USERS; }
+  private nextId: number = Math.max(...MOCK_USERS.map(u => u.id)) + 1;
   
   // BehaviorSubject pour gérer l'état des utilisateurs
-  private usersSubject = new BehaviorSubject<User[]>(this.users);
+  private usersSubject = new BehaviorSubject<User[]>(MOCK_USERS);
   public users$ = this.usersSubject.asObservable();
   
   constructor() {
@@ -65,7 +65,7 @@ export class UserService {
     }).pipe(
       delay(300),
       tap(() => {
-        let filtered = [...this.users];
+        let filtered = [...MOCK_USERS];
 
         // Apply search filter
         if (search && search.trim()) {
@@ -111,7 +111,7 @@ export class UserService {
   getUserById(id: number): Observable<User> {
     console.log('🔍 Mock getUserById:', id);
     
-    const user = this.users.find(u => u.id === id);
+    const user = MOCK_USERS.find(u => u.id === id);
     
     return of(user || ({} as User)).pipe(
       delay(300),
@@ -129,14 +129,14 @@ export class UserService {
   updateUserRole(id: number, role: string): Observable<User> {
     console.log('🔄 Mock updateUserRole - ID:', id, 'Role:', role);
     
-    const index = this.users.findIndex(u => u.id === id);
+    const index = MOCK_USERS.findIndex(u => u.id === id);
     
     if (index === -1) {
       return of({} as User).pipe(delay(300));
     }
 
-    const updatedUser = { ...this.users[index], role };
-    this.users[index] = updatedUser;
+    const updatedUser = { ...MOCK_USERS[index], role };
+    MOCK_USERS[index] = updatedUser;
     
     // Update subject
     const currentUsers = this.usersSubject.value;
@@ -154,11 +154,11 @@ export class UserService {
   deleteUser(id: number): Observable<any> {
     console.log('🗑️ Mock deleteUser:', id);
     
-    const index = this.users.findIndex(u => u.id === id);
+    const index = MOCK_USERS.findIndex(u => u.id === id);
     
     if (index !== -1) {
-      const deletedUser = this.users[index];
-      this.users.splice(index, 1);
+      const deletedUser = MOCK_USERS[index];
+      MOCK_USERS.splice(index, 1);
       
       // Update subject
       const currentUsers = this.usersSubject.value;
@@ -178,14 +178,14 @@ export class UserService {
     console.log('📊 Mock getUserStats');
     
     const stats: UserStats = {
-      totalUsers: this.users.length,
+      totalUsers: MOCK_USERS.length,
       roleDistribution: {
-        admin: this.users.filter(u => u.role === 'ADMIN').length,
-        client: this.users.filter(u => u.role === 'CLIENT').length,
-        member: this.users.filter(u => u.role === 'MEMBER').length,
+        admin: MOCK_USERS.filter(u => u.role === 'ADMIN').length,
+        client: MOCK_USERS.filter(u => u.role === 'CLIENT').length,
+        member: MOCK_USERS.filter(u => u.role === 'MEMBER').length,
       },
-      memberCount: this.users.filter(u => u.role === 'MEMBER').length,
-      nonMemberCount: this.users.filter(u => u.role !== 'MEMBER').length,
+      memberCount: MOCK_USERS.filter(u => u.role === 'MEMBER').length,
+      nonMemberCount: MOCK_USERS.filter(u => u.role !== 'MEMBER').length,
     };
 
     console.log('✅ Mock stats calculated:', stats);
@@ -204,7 +204,7 @@ export class UserService {
    * Récupère la liste actuelle des utilisateurs
    */
   getCurrentUsers(): User[] {
-    return this.users;
+    return MOCK_USERS;
   }
 
   /**
@@ -223,7 +223,7 @@ export class UserService {
       id: this.nextId++
     };
 
-    this.users.push(newUser);
+    MOCK_USERS.push(newUser);
     console.log('✅ Mock user added:', newUser.email);
     
     return newUser;

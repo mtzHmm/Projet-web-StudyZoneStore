@@ -13,12 +13,12 @@ export interface Category {
   providedIn: 'root'
 })
 export class CategoryService {
-  // In-memory storage for categories
-  private categories: Category[] = JSON.parse(JSON.stringify(MOCK_CATEGORIES));
-  private nextId: number = Math.max(...this.categories.map(c => c.id)) + 1;
+  // Direct reference to centralized category data
+  private get categories(): Category[] { return MOCK_CATEGORIES; }
+  private nextId: number = Math.max(...MOCK_CATEGORIES.map(c => c.id)) + 1;
   
   // Subject pour la gestion d'état des catégories
-  private categoriesSubject = new BehaviorSubject<Category[]>(this.categories);
+  private categoriesSubject = new BehaviorSubject<Category[]>(MOCK_CATEGORIES);
   public categories$ = this.categoriesSubject.asObservable();
 
   constructor() {
@@ -30,7 +30,7 @@ export class CategoryService {
    * Récupère toutes les catégories
    */
   getCategories(): Observable<Category[]> {
-    return of(this.categories).pipe(
+    return of(MOCK_CATEGORIES).pipe(
       delay(300),
       map(categories => {
         this.categoriesSubject.next(categories);
@@ -43,7 +43,7 @@ export class CategoryService {
    * Récupère une catégorie par son ID
    */
   getCategoryById(id: number): Observable<Category> {
-    const category = this.categories.find(c => c.id === id);
+    const category = MOCK_CATEGORIES.find(c => c.id === id);
     return of(category || ({} as Category)).pipe(delay(300));
   }
 
@@ -56,8 +56,8 @@ export class CategoryService {
       id: this.nextId++
     };
 
-    this.categories.push(newCategory);
-    this.categoriesSubject.next([...this.categories]);
+    MOCK_CATEGORIES.push(newCategory);
+    this.categoriesSubject.next([...MOCK_CATEGORIES]);
     console.log('✅ Category created:', newCategory);
 
     return of(newCategory).pipe(delay(500));
@@ -73,9 +73,9 @@ export class CategoryService {
       return of({} as Category).pipe(delay(300));
     }
 
-    const updatedCategory = { ...this.categories[index], ...category };
-    this.categories[index] = updatedCategory;
-    this.categoriesSubject.next([...this.categories]);
+    const updatedCategory = { ...MOCK_CATEGORIES[index], ...category };
+    MOCK_CATEGORIES[index] = updatedCategory;
+    this.categoriesSubject.next([...MOCK_CATEGORIES]);
     console.log('✅ Category updated:', updatedCategory);
 
     return of(updatedCategory).pipe(delay(500));
@@ -85,11 +85,11 @@ export class CategoryService {
    * Supprime une catégorie (Admin)
    */
   deleteCategory(id: number): Observable<{ message: string }> {
-    const index = this.categories.findIndex(c => c.id === id);
+    const index = MOCK_CATEGORIES.findIndex(c => c.id === id);
     
     if (index !== -1) {
-      this.categories.splice(index, 1);
-      this.categoriesSubject.next([...this.categories]);
+      MOCK_CATEGORIES.splice(index, 1);
+      this.categoriesSubject.next([...MOCK_CATEGORIES]);
       console.log('✅ Category deleted with ID:', id);
     }
 
@@ -112,7 +112,7 @@ export class CategoryService {
    * Obtient les catégories actuellement en cache
    */
   getCurrentCategories(): Category[] {
-    return this.categories;
+    return MOCK_CATEGORIES;
   }
 
   /**

@@ -3,13 +3,13 @@ import { Observable, of, throwError } from 'rxjs';
 import { delay, tap } from 'rxjs/operators';
 import { Order, OrderResponse, OrderCreateRequest, OrderUpdateRequest, OrderStatus } from '../models/order.interface';
 import { DashboardEventService } from './dashboard-event.service';
-import { generateMockOrders, LOCAL_STORAGE_KEYS as STORAGE_KEYS } from './mock-data';
+import { MOCK_ORDERS, LOCAL_STORAGE_KEYS as STORAGE_KEYS } from './mock-data';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
-  private orders: any[] = generateMockOrders();
+  private orders: any[] = MOCK_ORDERS;
   private nextId: number = Math.max(...this.orders.map(o => o.id)) + 1;
 
   constructor(

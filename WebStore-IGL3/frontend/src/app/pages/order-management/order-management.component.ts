@@ -6,6 +6,7 @@ import { OrderService } from '../../services/order.service';
 import { Order, OrderStatus } from '../../models/order.interface';
 import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { NotificationService } from '../../services/notification.service';
+import { MOCK_ORDERS } from '../../services/mock-data';
 
 @Component({
   selector: 'app-order-management',
@@ -74,100 +75,8 @@ export class OrderManagementComponent implements OnInit {
 
   // 📊 Données de fallback pour les tests (quand le backend n'est pas accessible)
   private loadFallbackData(): void {
-    this.orders = [
-      {
-        id: 1,
-        orderDate: '2024-12-10T10:30:00',
-        status: OrderStatus.PENDING,
-        deliveryMethod: 'Standard',
-        user: { id: 2, firstName: 'Mustapha', lastName: 'Labeydh', email: 'mustapha@example.com' },
-        orderItems: [
-          { id: 1, quantity: 2, product: { id: 1, name: 'T-Shirt StudyZone Store', price: 29.99, imageUrl: '/assets/images/tshirt-1.jpg' } }
-        ],
-        totalAmount: 59.98
-      },
-      {
-        id: 2,
-        orderDate: '2024-12-09T15:45:00',
-        status: OrderStatus.CONFIRMED,
-        deliveryMethod: 'Express',
-        user: { id: 3, firstName: 'Derrick', lastName: 'Spencer', email: 'derrick@example.com' },
-        orderItems: [
-          { id: 2, quantity: 1, product: { id: 2, name: 'Hoodie StudyZone Store', price: 49.99, imageUrl: '/assets/images/hoodie-1.jpg' } },
-          { id: 3, quantity: 2, product: { id: 3, name: 'StudyZone Sticker Pack', price: 9.99, imageUrl: '/assets/images/stickers.jpg' } }
-        ],
-        totalAmount: 69.97
-      },
-      {
-        id: 3,
-        orderDate: '2024-12-08T14:20:00',
-        status: OrderStatus.DELIVERED,
-        deliveryMethod: 'Standard',
-        user: { id: 4, firstName: 'Sarah', lastName: 'Johnson', email: 'sarah@example.com' },
-        orderItems: [
-          { id: 4, quantity: 3, product: { id: 4, name: 'StudyZone Mug', price: 12.99, imageUrl: '/assets/images/mug.jpg' } }
-        ],
-        totalAmount: 38.97
-      },
-      {
-        id: 4,
-        orderDate: '2024-12-07T09:15:00',
-        status: OrderStatus.CANCELLED,
-        deliveryMethod: 'Express',
-        user: { id: 5, firstName: 'Ahmed', lastName: 'Ben Ali', email: 'ahmed@example.com' },
-        orderItems: [
-          { id: 5, quantity: 1, product: { id: 5, name: 'StudyZone Cap', price: 19.99, imageUrl: '/assets/images/cap.jpg' } }
-        ],
-        totalAmount: 19.99
-      },
-      {
-        id: 5,
-        orderDate: '2024-12-06T16:30:00',
-        status: OrderStatus.PENDING,
-        deliveryMethod: 'Standard',
-        user: { id: 6, firstName: 'Fatima', lastName: 'Zouari', email: 'fatima@example.com' },
-        orderItems: [
-          { id: 6, quantity: 2, product: { id: 1, name: 'T-Shirt StudyZone Store', price: 29.99, imageUrl: '/assets/images/tshirt-1.jpg' } },
-          { id: 7, quantity: 1, product: { id: 6, name: 'StudyZone Bag', price: 24.99, imageUrl: '/assets/images/bag.jpg' } }
-        ],
-        totalAmount: 84.97
-      },
-      {
-        id: 6,
-        orderDate: '2024-12-05T11:45:00',
-        status: OrderStatus.CONFIRMED,
-        deliveryMethod: 'Express',
-        user: { id: 7, firstName: 'Mohamed', lastName: 'Trabelsi', email: 'mohamed@example.com' },
-        orderItems: [
-          { id: 8, quantity: 1, product: { id: 2, name: 'Hoodie StudyZone Store', price: 49.99, imageUrl: '/assets/images/hoodie-1.jpg' } }
-        ],
-        totalAmount: 49.99
-      },
-      {
-        id: 7,
-        orderDate: '2024-12-04T13:22:00',
-        status: OrderStatus.DELIVERED,
-        deliveryMethod: 'Standard',
-        user: { id: 8, firstName: 'Leila', lastName: 'Hajji', email: 'leila@example.com' },
-        orderItems: [
-          { id: 9, quantity: 4, product: { id: 3, name: 'StudyZone Sticker Pack', price: 9.99, imageUrl: '/assets/images/stickers.jpg' } },
-          { id: 10, quantity: 1, product: { id: 4, name: 'StudyZone Mug', price: 12.99, imageUrl: '/assets/images/mug.jpg' } }
-        ],
-        totalAmount: 52.95
-      },
-      {
-        id: 8,
-        orderDate: '2024-12-03T08:10:00',
-        status: OrderStatus.PENDING,
-        deliveryMethod: 'Standard',
-        user: { id: 9, firstName: 'Youssef', lastName: 'Karray', email: 'youssef@example.com' },
-        orderItems: [
-          { id: 11, quantity: 1, product: { id: 5, name: 'StudyZone Cap', price: 19.99, imageUrl: '/assets/images/cap.jpg' } },
-          { id: 12, quantity: 1, product: { id: 6, name: 'StudyZone Bag', price: 24.99, imageUrl: '/assets/images/bag.jpg' } }
-        ],
-        totalAmount: 44.98
-      }
-    ];
+    console.log('🔄 Loading centralized MOCK_ORDERS:', MOCK_ORDERS.length);
+    this.orders = [...MOCK_ORDERS];
     this.totalElements = this.orders.length;
     this.totalPages = Math.ceil(this.totalElements / this.pageSize);
     this.currentPage = 0;

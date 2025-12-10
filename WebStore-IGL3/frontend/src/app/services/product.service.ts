@@ -9,9 +9,9 @@ import { MOCK_PRODUCTS, MOCK_CATEGORIES } from './mock-data';
   providedIn: 'root'
 })
 export class ProductService {
-  // In-memory storage for products (simulating database)
-  private products: Product[] = JSON.parse(JSON.stringify(MOCK_PRODUCTS));
-  private nextId: number = Math.max(...this.products.map(p => p.id)) + 1;
+  // Direct reference to shared mock data
+  private get products(): Product[] { return MOCK_PRODUCTS; }
+  private nextId: number = Math.max(...MOCK_PRODUCTS.map(p => p.id)) + 1;
 
   constructor() {
     console.log('📦 ProductService initialized with mock data');
@@ -66,7 +66,7 @@ export class ProductService {
     return of(null).pipe(
       delay(300), // Simulate network delay
       map(() => {
-        let filtered = [...this.products];
+        let filtered = [...MOCK_PRODUCTS];
 
         // Apply search filter
         if (filters.searchQuery) {
@@ -124,7 +124,7 @@ export class ProductService {
 
   // Get product by ID
   getProductById(id: number): Observable<Product> {
-    const product = this.products.find(p => p.id === id);
+    const product = MOCK_PRODUCTS.find(p => p.id === id);
     
     if (!product) {
       return of({} as Product).pipe(delay(300));
@@ -157,7 +157,7 @@ export class ProductService {
       imageUrl: product.imageUrl || '/assets/images/placeholder.jpg'
     };
 
-    this.products.push(newProduct);
+    MOCK_PRODUCTS.push(newProduct);
     console.log('✅ Product created:', newProduct);
 
     return of(newProduct).pipe(delay(500));
@@ -165,14 +165,14 @@ export class ProductService {
 
   // Update product
   updateProduct(id: number, product: ProductUpdateRequest): Observable<Product> {
-    const index = this.products.findIndex(p => p.id === id);
+    const index = MOCK_PRODUCTS.findIndex(p => p.id === id);
     
     if (index === -1) {
       return of({} as Product).pipe(delay(300));
     }
 
-    const updatedProduct = { ...this.products[index], ...product };
-    this.products[index] = updatedProduct;
+    const updatedProduct = { ...MOCK_PRODUCTS[index], ...product };
+    MOCK_PRODUCTS[index] = updatedProduct;
     console.log('✅ Product updated:', updatedProduct);
 
     return of(updatedProduct).pipe(delay(500));
@@ -180,14 +180,14 @@ export class ProductService {
 
   // Patch product
   patchProduct(id: number, updates: Partial<Product>): Observable<Product> {
-    const index = this.products.findIndex(p => p.id === id);
+    const index = MOCK_PRODUCTS.findIndex(p => p.id === id);
     
     if (index === -1) {
       return of({} as Product).pipe(delay(300));
     }
 
-    const patchedProduct = { ...this.products[index], ...updates };
-    this.products[index] = patchedProduct;
+    const patchedProduct = { ...MOCK_PRODUCTS[index], ...updates };
+    MOCK_PRODUCTS[index] = patchedProduct;
     console.log('✅ Product patched:', patchedProduct);
 
     return of(patchedProduct).pipe(delay(500));
@@ -198,7 +198,7 @@ export class ProductService {
     const index = this.products.findIndex(p => p.id === id);
     
     if (index !== -1) {
-      this.products.splice(index, 1);
+      MOCK_PRODUCTS.splice(index, 1);
       console.log('✅ Product deleted with ID:', id);
     }
 
@@ -222,7 +222,7 @@ export class ProductService {
 
   // Get next product reference
   getNextReference(): Observable<{ reference: string }> {
-    const maxRef = this.products
+    const maxRef = MOCK_PRODUCTS
       .map(p => parseInt(p.reference?.split('-')[1] || '0'))
       .reduce((a, b) => Math.max(a, b), 0);
     
@@ -244,7 +244,7 @@ export class ProductService {
     sortDirection: string,
     filters: any
   ): ProductResponse {
-    let filtered = [...this.products];
+    let filtered = [...MOCK_PRODUCTS];
 
     // Apply category filter
     if (filters.categoryId !== undefined) {

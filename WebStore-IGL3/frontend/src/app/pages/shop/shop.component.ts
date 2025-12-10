@@ -6,6 +6,7 @@ import { ProductCardComponent } from '../../components/product-card/product-card
 import { Product, ProductResponse } from '../../models/product.interface';
 import { ProductService } from '../../services/product.service';
 import { CategoryService, Category } from '../../services/category.service';
+import { MOCK_PRODUCTS } from '../../services/mock-data';
 
 interface FilterOptions {
   searchQuery?: string;
@@ -136,7 +137,8 @@ export class ShopComponent implements OnInit {
 
   /** Fallback to mock products if backend is unavailable */
   loadMockProducts() {
-    this.products = this.generateMockProducts();
+    console.log('🛍️ Loading centralized mock products:', MOCK_PRODUCTS.length);
+    this.products = [...MOCK_PRODUCTS];
     this.totalProducts = this.products.length;
     this.totalPages = Math.ceil(this.totalProducts / this.pageSize);
     this.loading = false;
@@ -157,47 +159,7 @@ export class ShopComponent implements OnInit {
     }));
   }
 
-  /** Generate mock products for development */
-  generateMockProducts(): Product[] {
-    return [
-      {
-        id: 1,
-        name: 'WebStore-IGL3 Hoodie',
-        price: 45,
-        imageUrl: '/assets/images/hoodie.jpg',
-        description: 'Comfortable hoodie with WebStore-IGL3 logo',
-        stock: 10,
-        isClothing: true
-      },
-      {
-        id: 2,
-        name: 'WebStore-IGL3 T-Shirt',
-        price: 25,
-        imageUrl: '/assets/images/tshirt.jpg',
-        description: 'Classic WebStore-IGL3 t-shirt',
-        stock: 15,
-        isClothing: true
-      },
-      {
-        id: 3,
-        name: 'WebStore-IGL3 Mug',
-        price: 15,
-        imageUrl: '/assets/images/mug.jpg',
-        description: 'Coffee mug with WebStore-IGL3 branding',
-        stock: 5,
-        isClothing: false
-      },
-      {
-        id: 4,
-        name: 'WebStore-IGL3 Cap',
-        price: 20,
-        imageUrl: '/assets/images/cap.jpg',
-        description: 'Stylish cap with embroidered logo',
-        stock: 0,
-        isClothing: true
-      }
-    ];
-  }
+
 
   /** Change page */
   changePage(page: number) {

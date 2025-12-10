@@ -71,8 +71,8 @@
       <!-- Product Image - Left Side -->
       <div class="flex-shrink-0">
         <img 
-          [src]="product?.imageUrl || '/assets/placeholder-product.jpg'" 
-          [alt]="product?.name || 'Product'"
+          [src]="product.imageUrl || '/assets/placeholder-product.jpg'" 
+          [alt]="product.name || 'Product'"
           class="w-64 h-72 object-cover rounded-lg"
         />
       </div>
@@ -90,7 +90,7 @@
         </p>
         
         <!-- Material (if available) -->
-        <div *ngIf="product?.description" class="mb-6 text-sm text-gray-300 font-['Poppins']">
+        <div *ngIf="product.description" class="mb-6 text-sm text-gray-300 font-['Poppins']">
           <span class="block text-gray-400 mb-2">Material:</span>
           <span>{{ product.description }}</span>
         </div>
