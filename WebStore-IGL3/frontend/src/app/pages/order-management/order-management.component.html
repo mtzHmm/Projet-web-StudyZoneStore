@@ -60,7 +60,7 @@
       <div>
         <div class="font-medium">{{ getClientName(order) }}</div>
       </div>
-      <div class="text-yellow-400 font-bold">{{ order.totalAmount?.toFixed(2) }} DT</div>
+      <div class="text-zinc-400 font-bold">{{ order.totalAmount?.toFixed(2) }} DT</div>
       <div [ngClass]="getStatusColor(order.status)" class="font-medium">
         {{ getStatusLabel(order.status) }}
       </div>
@@ -92,7 +92,7 @@
         <!-- Bouton Confirmer (visible si PENDING) -->
         <button *ngIf="order.status === 'pending'"
                 (click)="confirmOrder(order)"
-                class="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-green-700 cursor-pointer rounded-md transition"
+                class="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-violet-600 cursor-pointer rounded-md transition"
                 title="Confirmer la commande">
           ✅
         </button>
@@ -100,7 +100,7 @@
         <!-- Bouton Livrer (visible si CONFIRMED) -->
         <button *ngIf="order.status === 'confirmed'"
                 (click)="deliverOrder(order)"
-                class="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-blue-600 cursor-pointer rounded-md transition"
+                class="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-cyan-600 cursor-pointer rounded-md transition"
                 title="Marquer comme livrée">
           🚚
         </button>

@@ -266,15 +266,15 @@ export class OrderService {
   getStatusColor(status: OrderStatus): string {
     switch (status) {
       case OrderStatus.PENDING:
-        return 'text-yellow-400';
+        return 'text-purple-300'; // Light purple to complement the violet theme
       case OrderStatus.CONFIRMED:
-        return 'text-blue-400';
+        return 'text-violet-400'; // Project's primary violet color
       case OrderStatus.DELIVERED:
-        return 'text-green-400';
+        return 'text-cyan-400'; // Cyan blue instead of green
       case OrderStatus.CANCELLED:
-        return 'text-red-400';
+        return 'text-red-400'; // Standard red for cancelled
       default:
-        return 'text-gray-400';
+        return 'text-zinc-400'; // Zinc instead of gray to match project theme
     }
   }
 

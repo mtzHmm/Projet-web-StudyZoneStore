@@ -76,10 +76,23 @@ export class OrderManagementComponent implements OnInit {
   // 📊 Données de fallback pour les tests (quand le backend n'est pas accessible)
   private loadFallbackData(): void {
     console.log('🔄 Loading centralized MOCK_ORDERS:', MOCK_ORDERS.length);
+    console.log('🔍 MOCK_ORDERS data:', MOCK_ORDERS);
     this.orders = [...MOCK_ORDERS];
+    
+    // Add totalAmount to each order if missing
+    this.orders = this.orders.map(order => ({
+      ...order,
+      totalAmount: order.totalAmount || this.orderService.calculateOrderTotal(order)
+    }));
+    
     this.totalElements = this.orders.length;
     this.totalPages = Math.ceil(this.totalElements / this.pageSize);
     this.currentPage = 0;
+    
+    console.log('✅ Orders loaded:', this.orders.length);
+    console.log('📊 totalElements:', this.totalElements);
+    console.log('📊 totalPages:', this.totalPages);
+    console.log('📊 First order:', this.orders[0]);
   }
 
   // 🔍 Filtrage des commandes
